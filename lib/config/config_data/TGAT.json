@@ -1,0 +1,15 @@
+{
+  "bs": 200,
+  "prefix": "",
+  "n_degree": 20,
+  "n_head": 2,
+  "n_epoch": 50,
+  "n_layer": 2,
+  "learning_rate": 0.0001,
+  "drop_out": 0.1,
+  "node_dim": 100,
+  "time_dim": 100,
+  "agg_method": "attn",
+  "attn_mode": "prod",
+  "time": "time",
+  "uniform": false}
