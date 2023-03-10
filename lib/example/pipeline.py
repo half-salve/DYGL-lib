@@ -1,5 +1,5 @@
 from ..evaluator import MergeLayer 
-from .link_prediction import CAW_link_prediction,TGN_link_prediction,TGAT_edge_pipeline
+from .link_prediction import CAW_link_prediction,TGN_link_prediction,TGAT_link_prediction
 
 def train_and_test(task = None,model_name = None,dataset=None,model_object=None ,config_object =None,):
     """
@@ -22,6 +22,6 @@ def train_and_test(task = None,model_name = None,dataset=None,model_object=None 
         if model_name == "TGN" or model_name == "Jodie" or model_name == "DeRep":
             TGN_link_prediction(config_object=config,model_object=model,dataset=data,Edge_predict=Edge_predictor)
         if model_name == "TGAT":
-            TGAT_edge_pipeline(config_object=config,model_object=model,dataset=data,Edge_predict=Edge_predictor)
+            TGAT_link_prediction(config_object=config,model_object=model,dataset=data,Edge_predict=Edge_predictor)
     
      

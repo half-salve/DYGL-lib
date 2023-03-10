@@ -520,10 +520,10 @@ class CAWN(torch.nn.Module):
         3. forward propagate to get src embeddings and tgt embeddings (and finally pos_score (shape: [batch, ]))
         4. forward propagate to get src embeddings and bgd embeddings (and finally neg_score (shape: [batch, ]))
         '''
-        print("src_idx_l",src_idx_l.shape, src_idx_l.dtype)
-        print("tgt_idx_l", tgt_idx_l.shape,  tgt_idx_l.dtype)
-        print("cut_time_l",cut_time_l.shape, cut_time_l.dtype)
-        print("e_idx_l",e_idx_l.shape, e_idx_l.dtype)
+        # print("src_idx_l",src_idx_l.shape, src_idx_l.dtype)
+        # print("tgt_idx_l", tgt_idx_l.shape,  tgt_idx_l.dtype)
+        # print("cut_time_l",cut_time_l.shape, cut_time_l.dtype)
+        # print("e_idx_l",e_idx_l.shape, e_idx_l.dtype)
         self.flag_for_cur_edge = flag_for_cur_edge
 
         subgraph_src= self.grab_subgraph(src_idx_l, cut_time_l, e_idx_l=e_idx_l)

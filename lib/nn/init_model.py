@@ -93,13 +93,13 @@ def TGN_init(config,Data,task):
 def CAW_init(config,Data,task):
     src ,dst = Data.edges()[0].numpy(),Data.edges()[1].numpy()
     t = Data.edata["time"].numpy()
-    edge_idx = torch.arange(Data.number_of_edges()).numpy()
+    edge_idx = torch.arange(1,Data.number_of_edges()+1).numpy()
 
     if task == "node_classification":
-        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_mask'])
+        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_mask'],1)
             
     elif task == "link_prediction":
-        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_observed_mask'])
+        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_observed_mask'],1)
     else:
         raise"no task "
     #先设置好了list共有节点数个list
@@ -134,12 +134,12 @@ def CAW_init(config,Data,task):
 def get_model(config,Data,task):
     if config["model"]=="TGAT":
         model = TGAT_init(config,Data,task)
-    if config["model"]=="CAW":
+    elif config["model"]=="CAW":
         model = CAW_init(config,Data,task)
-    if config["model"] == "Jodie"or config["model"] == "TGN" or config["model"] == "DeRep":
+    elif config["model"] == "Jodie" or config["model"] == "TGN" or config["model"] == "DeRep":
         model = TGN_init(config,Data,task)
     else:
-        print("eror")
+        raise "error"
 
     return model
 

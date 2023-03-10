@@ -457,18 +457,17 @@ class TGAN(torch.nn.Module):
         device = self.n_feat_th.device
     
         batch_size = len(src_idx_l)
-    
-        src_node_batch_th = src_idx_l.long().to(device)
-        cut_time_l_th = cut_time_l.float().to(device)
-
+        
+        src_node_batch_th = torch.from_numpy(src_idx_l).long().to(device)
+        cut_time_l_th = torch.from_numpy(cut_time_l).float().to(device)
+        
         cut_time_l_th = torch.unsqueeze(cut_time_l_th, dim=1)
 
         # query node always has the start time -> time span == 0
         src_node_t_embed = self.time_encoder(torch.zeros_like(cut_time_l_th))
-
+        
         if curr_layers == 0:
             src_node_feat = self.node_raw_embed(src_node_batch_th)
-            # print("src_node_feat",type(src_node_feat))
             return src_node_feat
         else:
             src_node_conv_feat = self.tem_conv(src_idx_l, 
@@ -476,19 +475,17 @@ class TGAN(torch.nn.Module):
                                            curr_layers=curr_layers - 1, 
                                            num_neighbors=num_neighbors)
             
+            
             src_ngh_node_batch, src_ngh_eidx_batch, src_ngh_t_batch = self.ngh_finder.get_temporal_neighbor( 
                                                                     src_idx_l, 
                                                                     cut_time_l, 
-                                                                    num_neighbors=num_neighbors)
+                                                                    num_neighbors)
             
-            #输入目标节点，在他的所有任意时间节点的邻居中选择num_neighbors个邻居并按照链接时间排序
-            src_ngh_node_batch_th = src_ngh_node_batch.long().to(device)
-            src_ngh_eidx_batch = src_ngh_eidx_batch.long().to(device)
+            src_ngh_node_batch_th = torch.from_numpy(src_ngh_node_batch).long().to(device)
+            src_ngh_eidx_batch = torch.from_numpy(src_ngh_eidx_batch).long().to(device)
             
-            src_ngh_t_batch_delta = cut_time_l.view(-1,1) - src_ngh_t_batch
-            src_ngh_t_batch_th = src_ngh_t_batch_delta.float().to(device)
-            #节点的时间与采样的邻居时间的差
-
+            src_ngh_t_batch_delta = cut_time_l[:, np.newaxis] - src_ngh_t_batch
+            src_ngh_t_batch_th = torch.from_numpy(src_ngh_t_batch_delta).float().to(device)
 
             # get previous layer's node features
             src_ngh_node_batch_flat = src_ngh_node_batch.flatten() #reshape(batch_size, -1)
@@ -497,33 +494,19 @@ class TGAN(torch.nn.Module):
                                                    src_ngh_t_batch_flat,
                                                    curr_layers=curr_layers - 1, 
                                                    num_neighbors=num_neighbors)
-            # print(src_ngh_node_conv_feat)
             src_ngh_feat = src_ngh_node_conv_feat.view(batch_size, num_neighbors, -1)
             
             # get edge time features and node features
             src_ngh_t_embed = self.time_encoder(src_ngh_t_batch_th)
-            # time features
-
             src_ngn_edge_feat = self.edge_raw_embed(src_ngh_eidx_batch)
-            # time features
 
             # attention aggregation
             mask = src_ngh_node_batch_th == 0
             attn_m = self.attn_model_list[curr_layers - 1]
+
+
+
             # print(src_node_conv_feat.dtype, src_node_t_embed.dtype, src_ngh_feat.dtype, src_ngh_t_embed.dtype, src_ngn_edge_feat.dtype, mask.dtype)
-
-            # print("src_node_conv_feat ",src_node_conv_feat.shape,src_node_conv_feat.dtype)
-
-            # print("src_node_t_embed",src_node_t_embed.shape,src_node_t_embed.dtype)
-
-            # print("src_ngh_feat ",src_ngh_feat.shape,src_ngh_feat.dtype)
-
-            # print("src_ngh_t_embed",src_ngh_t_embed.shape,src_ngh_t_embed.dtype)
-
-            # print("src_ngn_edge_feat",src_ngn_edge_feat.shape,src_ngn_edge_feat.dtype)
-
-            # print("mask",mask.shape,mask.dtype)
-            
             local, weight = attn_m(src_node_conv_feat, 
                                    src_node_t_embed,
                                    src_ngh_feat,
@@ -531,3 +514,83 @@ class TGAN(torch.nn.Module):
                                    src_ngn_edge_feat, 
                                    mask)
             return local
+        # assert(curr_layers >= 0)
+        
+        # device = self.n_feat_th.device
+    
+        # batch_size = len(src_idx_l)
+    
+        # src_node_batch_th = src_idx_l.long().to(device)
+        # cut_time_l_th = cut_time_l.float().to(device)
+
+        # cut_time_l_th = torch.unsqueeze(cut_time_l_th, dim=1)
+
+        # # query node always has the start time -> time span == 0
+        # src_node_t_embed = self.time_encoder(torch.zeros_like(cut_time_l_th))
+
+        # if curr_layers == 0:
+        #     src_node_feat = self.node_raw_embed(src_node_batch_th)
+        #     # print("src_node_feat",type(src_node_feat))
+        #     return src_node_feat
+        # else:
+        #     src_node_conv_feat = self.tem_conv(src_idx_l, 
+        #                                    cut_time_l,
+        #                                    curr_layers=curr_layers - 1, 
+        #                                    num_neighbors=num_neighbors)
+            
+        #     src_ngh_node_batch, src_ngh_eidx_batch, src_ngh_t_batch = self.ngh_finder.get_temporal_neighbor( 
+        #                                                             src_idx_l, 
+        #                                                             cut_time_l, 
+        #                                                             num_neighbors=num_neighbors)
+            
+        #     #输入目标节点，在他的所有任意时间节点的邻居中选择num_neighbors个邻居并按照链接时间排序
+        #     src_ngh_node_batch_th = src_ngh_node_batch.long().to(device)
+        #     src_ngh_eidx_batch = src_ngh_eidx_batch.long().to(device)
+            
+        #     src_ngh_t_batch_delta = cut_time_l.view(-1,1) - src_ngh_t_batch
+        #     src_ngh_t_batch_th = src_ngh_t_batch_delta.float().to(device)
+        #     #节点的时间与采样的邻居时间的差
+
+
+        #     # get previous layer's node features
+        #     src_ngh_node_batch_flat = src_ngh_node_batch.flatten() #reshape(batch_size, -1)
+        #     src_ngh_t_batch_flat = src_ngh_t_batch.flatten() #reshape(batch_size, -1)  
+        #     src_ngh_node_conv_feat = self.tem_conv(src_ngh_node_batch_flat, 
+        #                                            src_ngh_t_batch_flat,
+        #                                            curr_layers=curr_layers - 1, 
+        #                                            num_neighbors=num_neighbors)
+        #     # print(src_ngh_node_conv_feat)
+        #     src_ngh_feat = src_ngh_node_conv_feat.view(batch_size, num_neighbors, -1)
+            
+        #     # get edge time features and node features
+        #     src_ngh_t_embed = self.time_encoder(src_ngh_t_batch_th)
+        #     # time features
+
+        #     src_ngn_edge_feat = self.edge_raw_embed(src_ngh_eidx_batch)
+        #     # time features
+
+        #     # attention aggregation
+        #     mask = src_ngh_node_batch_th == 0
+        #     attn_m = self.attn_model_list[curr_layers - 1]
+        #     # print(src_node_conv_feat.dtype, src_node_t_embed.dtype, src_ngh_feat.dtype, src_ngh_t_embed.dtype, src_ngn_edge_feat.dtype, mask.dtype)
+
+        #     # print("src_node_conv_feat ",src_node_conv_feat.shape,src_node_conv_feat.dtype)
+
+        #     # print("src_node_t_embed",src_node_t_embed.shape,src_node_t_embed.dtype)
+
+        #     # print("src_ngh_feat ",src_ngh_feat.shape,src_ngh_feat.dtype)
+
+        #     # print("src_ngh_t_embed",src_ngh_t_embed.shape,src_ngh_t_embed.dtype)
+
+        #     # print("src_ngn_edge_feat",src_ngn_edge_feat.shape,src_ngn_edge_feat.dtype)
+
+        #     # print("mask",mask.shape,mask.dtype)
+            
+        #     local, weight = attn_m(src_node_conv_feat, 
+        #                            src_node_t_embed,
+        #                            src_ngh_feat,
+        #                            src_ngh_t_embed, 
+        #                            src_ngn_edge_feat, 
+        #                            mask)
+        #     return local
+        

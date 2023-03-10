@@ -189,7 +189,7 @@ def CAW_link_prediction(config_object,model_object,dataset,Edge_predict):
         logger.info('Test statistics: New nodes -- acc: {}, auc: {}, ap: {} , f1{}'.format(nn_test_acc, nn_test_auc, nn_test_ap, nn_test_f1,))
 
         test_metric.append([test_acc, test_ap, test_f1, test_auc])
-        test_observed_metric.append(nn_test_acc, nn_test_ap, nn_test_f1, nn_test_auc)
+        test_observed_metric.append([nn_test_acc, nn_test_ap, nn_test_f1, nn_test_auc])
         
     np.savetxt(os.path.join(save_dir,"link-train_metirc.txt"),np.array(train_metirc))
 

@@ -186,7 +186,9 @@ def compute_time_statistics(sources, destinations, timestamps):
 
     return mean_time_shift_src, std_time_shift_src, mean_time_shift_dst, std_time_shift_dst
 
-def get_data(name,start_id=0):
+def get_data(name,model_name,start_id=0):
+    if model_name == "CAW":
+        start_id = 1
     if name == "wikipedia":
         data = WikipediaDataset(start_id=start_id)[0]
     if name == "Reddit":
