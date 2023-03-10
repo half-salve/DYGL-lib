@@ -1,5 +1,7 @@
 *
 !/lib
+!/doc
 !lib/**
+!doc/**
 !*.md
 !run_model.py
