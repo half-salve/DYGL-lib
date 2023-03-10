@@ -6,8 +6,6 @@ from .CAWconv import CAWNeighborFinder
 
 from .TGNconv import TGN
 
-
-
 from ..utils import numpy_from_mask,init_adjacency_list,compute_time_statistics
 import torch
 import sys

@@ -1,2 +1,0 @@
-class sample:
-    pass

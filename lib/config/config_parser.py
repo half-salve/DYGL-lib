@@ -12,11 +12,10 @@ class DGCONFIG(object):
     This class defines a basic template class for CONFIG.
     The following steps will are executed automatically:
 
-      1. Check whether args is NONE. If true, goto 3.
-      2. Call ``parse_config_file()`` If the default model parameters are used, the function will read the parameters according to the specified model.
-      3. Call ``parse_external_config()`` Personalize custom arguments based on args and other_args.
-      4. Call ``init_device()`` Initialize the device.
-      6. Done.
+      1. Call ``parse_config_file()`` Read additional parameters from the config file to _config
+      2. Call ``parse_external_config()`` Add the parameters in args to _config
+      3. Call ``init_device()`` Initialize the device.
+      4. Done.
           """
     def __init__(self, args,config_file=None):
         self._args=vars(args)
@@ -33,16 +32,8 @@ class DGCONFIG(object):
         self._init_device()
 
     def _parse_config_file(self):
-
-        if self.config_file is None:
-            # TODO: 对 config file 的格式进行检查
-            self.Check_required_parameters()
-
-            self.read_defalt_parameters()
-
-        else:
-            self.read_defalt_parameters()
-
+        self.read_defalt_parameters()
+        self.Check_required_parameters()
 
     def _parse_external_config(self):
         if self.args is not None :
@@ -93,9 +84,7 @@ class DGCONFIG(object):
         r"""return args.
                """
         return self._args
-        r"""return other_args.
-               """
-        return self._other_args
+
 
     @property
     def config_file(self):
@@ -112,7 +101,7 @@ class ConfigParser(DGCONFIG):
     config 优先级：命令行 > config file 
     """
 
-    def __init__(self, args,config_file=None,other_args=None):
+    def __init__(self, args,config_file=None):
         """
         Args:
             task, model, dataset (str): 用户在命令行必须指明的三个参数
@@ -131,6 +120,8 @@ class ConfigParser(DGCONFIG):
         if self.args.get("dataset",None) is None:
             raise ValueError('the parameter <dataset> should not be None!')
 
+        if self.args.get("task",None) is None:
+            raise ValueError('the parameter <task> should not be None!')
     def read_defalt_parameters(self):
 
         self._config_file = os.path.join(self.config_dir,"{}.json".format(self.args["model"]))
