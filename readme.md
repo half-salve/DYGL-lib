@@ -95,9 +95,9 @@ Base : `Object`
 #### Link Prediction Datasets
 
 ##### RedditDataset
-```
-class dgl.data.RedditDataset(raw_dir=None, force_reload=False, verbose=True, transform=None,start_id = 0)
-```
+
+`class dgl.data.RedditDataset(raw_dir=None, force_reload=False, verbose=True, transform=None,start_id = 0)`
+
 
 Base : `lib.data.JODIEDataset`
 
@@ -127,9 +127,9 @@ Reddit Dataset Statistics
 
 
 ##### WikipediaDataset
-```
+`
 class dgl.data.WikipediaDataset(raw_dir=None, force_reload=False, verbose=True, transform=None,start_id = 0)
-```
+`
 
 Base : `lib.data.JODIEDataset`
 
