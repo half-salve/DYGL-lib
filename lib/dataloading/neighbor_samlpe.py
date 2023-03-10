@@ -23,7 +23,7 @@ from tqdm import tqdm
 
 
 class TGATNeighborFinder:
-    def __init__(self, max_idx,src,dst,edges, time, uniform=False):
+    def __init__(self, adj_list, uniform=False):
         """
         Params
         ------
@@ -31,7 +31,6 @@ class TGATNeighborFinder:
         node_ts_l: Tensor[int]
         off_set_l: Tensor[int], such that node_idx_l[off_set_l[i]:off_set_l[i + 1]] = adjacent_list[i]
         """ 
-        adj_list = self.init_adjacency_list(max_idx,src,dst,edges, time)
         
         node_idx_l, node_ts_l, edge_idx_l, off_set_l = self.init_off_set(adj_list)
         self.node_idx_l = node_idx_l
@@ -41,21 +40,6 @@ class TGATNeighborFinder:
         
         self.uniform = uniform
         
-
-    def init_adjacency_list(self, max_idx,src,dst,edges, time):
-        
-        src_max = src.max()
-        dst_max = dst.max()
-        if max_idx <src_max or max_idx<dst_max:
-            raise "max_idx is less than the maximum value of the output source or target node set"
-
-        adj_list = [[] for _ in range(max_idx )]
-        for source, target, edge ,ts in zip(src,dst,edges, time):
-            adj_list[source].append((target,edge, ts))
-            adj_list[target].append((source, edge, ts))
-
-                                
-        return adj_list
     
     def init_off_set(self, adj_list):
         """

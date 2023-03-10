@@ -1,6 +1,5 @@
 *
 !/lib
 !lib/**
-!.gitignore
 !*.md
 !run_model.py

@@ -39,4 +39,3 @@ Data = get_data(config["dataset"])
 model = lib.get_model(config,Data,config["task"])
 
 train_and_test (task = config["task"],model_name = config["model"],dataset=config["dataset"],model_object=model,config_object =config)
-456

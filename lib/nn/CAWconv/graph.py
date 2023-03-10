@@ -7,7 +7,7 @@ PRECISION = 5
 
 
 class NeighborFinder:
-    def __init__(self, max_idx, train_src, train_dst, train_edge ,train_t, bias=0, ts_precision=PRECISION, use_cache=False, sample_method='multinomial'):
+    def __init__(self,adj_list , bias=0, ts_precision=PRECISION, use_cache=False, sample_method='multinomial'):
         """
         Params
         ------
@@ -16,7 +16,6 @@ class NeighborFinder:
         off_set_l: List[int], such that node_idx_l[off_set_l[i]:off_set_l[i + 1]] = adjacent_list[i]
         """
         self.bias = bias  # the "alpha" hyperparameter
-        adj_list = self.init_adjacency_list(max_idx, train_src, train_dst, train_edge ,train_t)
 
         node_idx_l, node_ts_l, edge_idx_l, binary_prob_l, off_set_l, self.nodeedge2idx = self.init_off_set(adj_list)
         self.node_idx_l = node_idx_l
@@ -30,22 +29,6 @@ class NeighborFinder:
         self.ngh_lengths = []  # for data analysis
         self.ngh_time_lengths = []  # for data analysis
         self.sample_method = sample_method
-
-
-    def init_adjacency_list(self, max_idx,src,dst,edges, time):
-
-        src_max = src.max()
-        dst_max = dst.max()
-        if max_idx < src_max or max_idx < dst_max:
-            raise "max_idx is less than the maximum value of the output source or target node set"
-
-        adj_list = [[] for _ in range(max_idx+1)]
-        for source, target, edge ,ts in zip(src,dst,edges, time):
-            adj_list[source].append((target,edge, ts))
-            adj_list[target].append((source, edge, ts))
-
-                                
-        return adj_list
     
     def init_off_set(self, adj_list):
         """

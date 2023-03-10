@@ -1,7 +1,3 @@
-import lib
-
-import argparse
-import sys
 import os
 import math
 
@@ -10,15 +6,8 @@ import numpy as np
 from tqdm import tqdm
 
 from lib.dataloading import RandEdgeSampler
-from lib.evaluator import MergeLayer ,link_prediction_metric
-from lib.utils import get_logger,set_checkpoints_metric,data_from_mask
-from lib.data import get_data
-
-from sklearn.metrics import average_precision_score
-from sklearn.metrics import f1_score
-from sklearn.metrics import roc_auc_score
-
-import dgl
+from lib.evaluator import link_prediction_metric
+from lib.utils import get_logger,set_checkpoints_metric,numpy_from_mask
 
 def eval_one_epoch(model,Edge_predictor, sampler, src, dst, ts,edges):
     val_acc, val_ap, val_f1, val_auc = [], [], [], []
@@ -49,39 +38,20 @@ def eval_one_epoch(model,Edge_predictor, sampler, src, dst, ts,edges):
             pos_prob  = Edge_predictor(src_embed, target_embed).squeeze(dim = -1).sigmoid()
             neg_prob =  Edge_predictor(src_embed, background_embed).squeeze(dim = -1).sigmoid()
 
-            pred_score = np.concatenate([(pos_prob).cpu().numpy(), (neg_prob).cpu().numpy()])
-            pred_label = pred_score > 0.5
-            true_label = np.concatenate([np.ones(size), np.zeros(size)])
+            metric = link_prediction_metric(pos_prob,neg_prob,size)
             
-            val_acc.append((pred_label == true_label).mean())
-            val_ap.append(average_precision_score(true_label, pred_score))
-            val_f1.append(f1_score(true_label, pred_label))
-            val_auc.append(roc_auc_score(true_label, pred_score))
+            for val_metric , x in zip([val_acc,val_ap,val_f1,val_auc],metric):
+                val_metric.append(x)
 
     return np.mean(val_acc), np.mean(val_ap), np.mean(val_f1), np.mean(val_auc)
 
-def CAW_link_prediction():
-    parser = argparse.ArgumentParser(
-        'The code used to  node classification')
-
-    # select dataset and training model
-    parser.add_argument('--dataset', type=str, default='wikipedia', help='data sources to use, try wikipedia or reddit',
-                        choices=["wikipedia" ,"Reddit","Mooc","redditlink"], )
-    parser.add_argument( '--model', type=str, default='CAW', help='select model that you want to use',
-                        choices=["TGAT,CAW"], )
-    parser.add_argument( '--task', type=str, default='link_prediction', help='select task that you want to use',
-                        choices=["link_prediction,node_classification"], )
-    # general training hyper-parameters
-    parser.add_argument('--n_epoch', type=int, default=50, help='number of epochs')
-
-    # parameters controlling computation settings but not affecting results in general
-    parser.add_argument('--seed', type=int, default=2023, help='random seed for all randomized algorithms')
-    parser.add_argument('--gpu', type=int, default=0, help='which gpu to use')
-    parser.add_argument('--exp_id', type=int, default=0, help='')
-    args = parser.parse_args()
-
-    # select dataset and training mode
-    config=lib.ConfigParser(args)
+def CAW_link_prediction(config_object,model_object,dataset,Edge_predict):
+    
+    # select dataset ,model,config,Edge_predictor 
+    config = config_object
+    model = model_object
+    data = dataset
+    Edge_predictor = Edge_predict
 
     checkpoints_path ,save_dir= set_checkpoints_metric(config,[config["agg_method"],config["attn_mode"],config["time"]])
 
@@ -91,26 +61,20 @@ def CAW_link_prediction():
 
     BATCH_SIZE = config['bs']
 
-    Data = get_data(config["dataset"])
+    src ,dst = data.edges()[0].numpy(),data.edges()[1].numpy()
 
-    src ,dst = Data.edges()
+    train_src,train_dst, train_t , train_edge = numpy_from_mask(data,data.edata['train_edge_observed_mask'],1)
 
-    train_src,train_dst, train_t , train_edge = data_from_mask(Data,Data.edata['train_edge_observed_mask'],1)
+    valid_src, valid_dst, valid_t, valid_edge  = numpy_from_mask(data,data.edata['valid_edge_mask'],1)
+    valid_observed_src, valid_observed_dst, valid_observed_t, valid_observed_edge = numpy_from_mask(data,data.edata['valid_edge_observed_mask'],1)
 
-    valid_src, valid_dst, valid_t, valid_edge  = data_from_mask(Data,Data.edata['valid_edge_mask'],1)
-    valid_observed_src, valid_observed_dst, valid_observed_t, valid_observed_edge = data_from_mask(Data,Data.edata['valid_edge_observed_mask'],1)
+    test_src, test_dst, test_t, test_edge = numpy_from_mask(data,data.edata['test_edge_mask'],1)
+    test_observed_src, test_observed_dst, test_observed_t, test_observed_edge = numpy_from_mask(data,data.edata['test_edge_observed_mask'],1)
 
-    test_src, test_dst, test_t, test_edge = data_from_mask(Data,Data.edata['test_edge_mask'],1)
-    test_observed_src, test_observed_dst, test_observed_t, test_observed_edge = data_from_mask(Data,Data.edata['test_edge_observed_mask'],1)
-
-
-
-    model = lib.get_model(config,Data,config["task"]).to(device)
-
-    Edge_predictor = MergeLayer(model.feat_dim, model.feat_dim, model.feat_dim, 1,not config["walk_linear_out"]).to(device)
+    model = model.to(device)
+    Edge_predictor = Edge_predictor.to(device)
 
     criterion = torch.nn.BCELoss()
-
     optimizer = torch.optim.Adam([{'params':model.parameters()},
                                 {'params':Edge_predictor.parameters()},],
                                 lr=config["learning_rate"])
@@ -134,11 +98,12 @@ def CAW_link_prediction():
     train_metirc =[]
     valid_metric = []
     valid_observed_metric = []
+    idx_list = np.arange(num_instance)
 
     for epoch in range(config["n_epoch"]):
         
         acc, ap, f1, auc, m_loss = [], [], [], [], []
-        idx_list = torch.randperm(num_instance)
+        np.random.shuffle(idx_list)
         logger.info('start train {} epoch'.format(epoch))
         for k in tqdm(range(num_batch)):
             src_idx = k * BATCH_SIZE
@@ -176,16 +141,11 @@ def CAW_link_prediction():
             with torch.no_grad():
                 model.set_state("eval")
                 Edge_predictor.eval()
-                pred_score = np.concatenate([(pos_prob).cpu().detach().numpy(), (neg_prob).cpu().detach().numpy()])
-
-                pred_label = pred_score > 0.5
-                true_label = np.concatenate([np.ones(size), np.zeros(size)])
-
-                acc.append((pred_label == true_label).mean())
-                ap.append(average_precision_score(true_label, pred_score))
-                f1.append(f1_score(true_label, pred_label))
+                metric = link_prediction_metric(pos_prob,neg_prob,size)
+                for train_metric , x in zip([acc,ap,f1,auc],metric):
+                    train_metric.append(x) 
                 m_loss.append(loss.item())
-                auc.append(roc_auc_score(true_label, pred_score))
+                
             
         val_acc, val_ap, val_f1, val_auc = eval_one_epoch(model, Edge_predictor,val_rand_sampler, valid_src, \
                                                             valid_dst, valid_t,valid_edge)
@@ -225,15 +185,11 @@ def CAW_link_prediction():
                                                             test_observed_dst, test_observed_t, test_observed_edge)
         
         logger.info('test epoch: {}:'.format(epoch))
-        # logger.info('Test statistics: Old nodes -- acc: {}, auc: {}, ap: {} , f1{}'.format(test_acc, test_auc, test_ap, test_f1))
+        logger.info('Test statistics: Old nodes -- acc: {}, auc: {}, ap: {} , f1{}'.format(test_acc, test_auc, test_ap, test_f1))
         logger.info('Test statistics: New nodes -- acc: {}, auc: {}, ap: {} , f1{}'.format(nn_test_acc, nn_test_auc, nn_test_ap, nn_test_f1,))
 
-        # test_metric.append([test_acc, test_ap, test_f1, test_auc])
+        test_metric.append([test_acc, test_ap, test_f1, test_auc])
         test_observed_metric.append(nn_test_acc, nn_test_ap, nn_test_f1, nn_test_auc)
-
-    save_dir= os.path.join("./metric",config["model"],config["dataset"])
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
         
     np.savetxt(os.path.join(save_dir,"link-train_metirc.txt"),np.array(train_metirc))
 

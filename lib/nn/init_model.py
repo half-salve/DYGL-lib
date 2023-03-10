@@ -14,97 +14,34 @@ import sys
 import numpy as np
 
 def TGAT_init(config,Data,task):
-    src ,dst = Data.edges()
-    t = Data.edata["time"]
-    edge_idx = torch.arange(Data.number_of_edges())
-
-    max_idx = Data.number_of_nodes()
+    src ,dst = Data.edges()[0].numpy(),Data.edges()[1].numpy()
+    t = Data.edata["time"].numpy()
+    edge_idx = torch.arange(Data.number_of_edges()).numpy()
+    ##转化为numpy格式
+    max_idx = max(src.max(),dst.max())
     if task == "node_classification":
-        train_src = src[Data.edata['train_edge_mask']]
-        train_dst = dst[Data.edata['train_edge_mask']]
-        train_t = t[Data.edata['train_edge_mask']]
-        train_edge = edge_idx[Data.edata['train_edge_mask']]
+        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_mask'])
     elif task == "link_prediction":
-        train_src = src[Data.edata['train_edge_observed_mask']]
-        train_dst = dst[Data.edata['train_edge_observed_mask']]
-        train_t = t[Data.edata['train_edge_observed_mask']]
-        train_edge = edge_idx[Data.edata['train_edge_observed_mask']]
+        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_observed_mask'])
+
     else:
         raise"no task "
     #先设置好了list共有节点数个list
     print("Generate a set of neighbors for a train node>>>>>>>>")
-    train_ngh_finder = TGATNeighborFinder(max_idx, train_src, train_dst, train_edge ,train_t, config["uniform"])
+    train_adj_list = init_adjacency_list(max_idx, train_src, train_dst, train_edge ,train_t)
+    train_ngh_finder = NeighborFinder(train_adj_list, config["uniform"])
     
     print("Generate a set of neighbors for a full node>>>>>>>>")
-    full_ngh_finder = TGATNeighborFinder(max_idx, src , dst, edge_idx, t, config["uniform"])
+    full_adj_list = init_adjacency_list(max_idx, src, dst, edge_idx ,t)
+    full_ngh_finder = NeighborFinder(full_adj_list, config["uniform"])
 
     model = TGAT([train_ngh_finder,full_ngh_finder], Data.ndata["feat"], Data.edata["edge_feat"],
             num_layers=config["n_layer"], use_time=config["time"], agg_method=config["agg_method"], attn_mode=config["attn_mode"],
             seq_len=config["n_degree"] , n_head=config["n_head"], drop_out=config["drop_out"])
     
-
     return model
 
 
-def CAW_init(config,Data,task):
-    src ,dst = Data.edges()
-    t = Data.edata["time"]
-    edge_idx = torch.arange(1,Data.number_of_edges() + 1)
-
-    if task == "node_classification":
-        train_src = src[Data.edata['train_edge_mask']].numpy()
-        train_dst = dst[Data.edata['train_edge_mask']].numpy()
-        train_t = t[Data.edata['train_edge_mask']].numpy()
-        train_edge = edge_idx[Data.edata['train_edge_mask']].numpy()
-    elif task == "link_prediction":
-        train_src = src[Data.edata['train_edge_observed_mask']].numpy()
-        train_dst = dst[Data.edata['train_edge_observed_mask']].numpy()
-        train_t = t[Data.edata['train_edge_observed_mask']].numpy()
-        train_edge = edge_idx[Data.edata['train_edge_observed_mask']].numpy()
-    else:
-        raise"no task "
-    #先设置好了list共有节点数个list
-    src ,dst = src.numpy(),dst.numpy()
-    t = Data.edata["time"].numpy()
-    edge_idx = edge_idx.numpy()
-    max_idx = max(src.max(), dst.max())
-    print(src.min(),src.max(), dst.min(), dst.max())
-    print("max_idx",max_idx)
-
-    print(train_src.shape)
-    print("Generate a set of neighbors for a train node>>>>>>>>")
-    
-    train_ngh_finder = CAWNeighborFinder(max_idx, train_src, train_dst, train_edge ,train_t, bias=config["bias"], use_cache=config["ngh_cache"],sample_method=config["pos_sample"])
-
-    print("Generate a set of neighbors for a full node>>>>>>>>")
-
-
-    full_ngh_finder = CAWNeighborFinder(max_idx, src , dst, edge_idx, t, bias=config["bias"], use_cache=config["ngh_cache"],sample_method=config["pos_sample"])
-
-    empty = np.zeros(Data.edata["edge_feat"].shape[1])[np.newaxis, :]
-
-    empty = torch.zeros(Data.edata["edge_feat"].shape[1]).view(1,-1)
-    edge_features = torch.vstack([empty, Data.edata["edge_feat"]])
-    model = CAW([train_ngh_finder,full_ngh_finder], Data.ndata["feat"],  edge_features,agg=config["agg"],
-                num_layers = config["n_layer"], use_time = config["time"]  , attn_agg_method = config["agg_method"],attn_mode = config["attn_mode"],
-                n_head = config["attn_n_head"], drop_out = config["drop_out"] , pos_dim = config["pos_dim"] ,pos_enc = config["pos_enc"] ,
-                num_neighbors = config["n_degree"] ,  walk_n_head = config["walk_n_head"] , walk_mutual = config["walk_mutual"] if config["walk_pool"] == 'attn' else False,
-                walk_linear_out = config["walk_linear_out"] , walk_pool = config["walk_pool"],cpu_cores = config["cpu_cores"], verbosity = config["verbosity"])
-
-
-    return model
-
-def get_model(config,Data,task):
-    if config["model"]=="TGAT":
-        model = TGAT_init(config,Data,task)
-    if config["model"]=="CAW":
-        model = CAW_init(config,Data,task)
-    if config["model"] == "Jodie"or config["model"] == "TGN" or config["model"] == "DeRep":
-        model = TGN_init(config,Data,task)
-    else:
-        print("eror")
-
-    return model
 
 def TGN_init(config,Data,task):
     src ,dst = Data.edges()[0].numpy(),Data.edges()[1].numpy()
@@ -152,3 +89,60 @@ def TGN_init(config,Data,task):
                         use_source_embedding_in_message=config["use_source_embedding_in_message"],
                         dyrep=config["dyrep"])
     return model
+
+def CAW_init(config,Data,task):
+    src ,dst = Data.edges()[0].numpy(),Data.edges()[1].numpy()
+    t = Data.edata["time"].numpy()
+    edge_idx = torch.arange(Data.number_of_edges()).numpy()
+
+    if task == "node_classification":
+        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_mask'])
+            
+    elif task == "link_prediction":
+        train_src,train_dst,train_t,train_edge = numpy_from_mask(Data,Data.edata['train_edge_observed_mask'])
+    else:
+        raise"no task "
+    #先设置好了list共有节点数个list
+
+    max_idx = max(src.max(), dst.max())
+    print(src.min(),src.max(), dst.min(), dst.max())
+    print("max_idx",max_idx)
+
+    print(train_src.shape)
+    print("Generate a set of neighbors for a train node>>>>>>>>")
+    train_adj_list = init_adjacency_list(max_idx, train_src, train_dst, train_edge ,train_t)
+    train_ngh_finder = CAWNeighborFinder(train_adj_list, bias=config["bias"], use_cache=config["ngh_cache"],sample_method=config["pos_sample"])
+
+    print("Generate a set of neighbors for a full node>>>>>>>>")
+    full_adj_list = init_adjacency_list(max_idx, src, dst, edge_idx ,t)
+    full_ngh_finder = CAWNeighborFinder(full_adj_list, bias=config["bias"], use_cache=config["ngh_cache"],sample_method=config["pos_sample"])
+
+    empty = np.zeros(Data.edata["edge_feat"].shape[1])[np.newaxis, :]
+
+    empty = torch.zeros(Data.edata["edge_feat"].shape[1]).view(1,-1)
+    edge_features = torch.vstack([empty, Data.edata["edge_feat"]])
+    
+    model = CAW([train_ngh_finder,full_ngh_finder], Data.ndata["feat"],  edge_features,agg=config["agg"],
+                num_layers = config["n_layer"], use_time = config["time"]  , attn_agg_method = config["agg_method"],attn_mode = config["attn_mode"],
+                n_head = config["attn_n_head"], drop_out = config["drop_out"] , pos_dim = config["pos_dim"] ,pos_enc = config["pos_enc"] ,
+                num_neighbors = config["n_degree"] ,  walk_n_head = config["walk_n_head"] , walk_mutual = config["walk_mutual"] if config["walk_pool"] == 'attn' else False,
+                walk_linear_out = config["walk_linear_out"] , walk_pool = config["walk_pool"],cpu_cores = config["cpu_cores"], verbosity = config["verbosity"])
+
+
+    return model
+
+def get_model(config,Data,task):
+    if config["model"]=="TGAT":
+        model = TGAT_init(config,Data,task)
+    if config["model"]=="CAW":
+        model = CAW_init(config,Data,task)
+    if config["model"] == "Jodie"or config["model"] == "TGN" or config["model"] == "DeRep":
+        model = TGN_init(config,Data,task)
+    else:
+        print("eror")
+
+    return model
+
+
+
+
