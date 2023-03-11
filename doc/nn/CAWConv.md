@@ -51,7 +51,7 @@ Compute graph network layer
 
 **Example**:
 
-```
+```python
 train_src = numpy.array([0,5,6,4])
 train_dst = num.array([2,5,1,2])
 
@@ -62,17 +62,18 @@ train_rand_sampler = RandEdgeSampler(train_src, train_dst)
 valid_rand_sampler = RandEdgeSampler(valid_src, valid_dst)
 
 edge_cut = numpy.arange(len(train_src))
+time = numpy.random.randint(0,10,train.shape)
 
 size = train_src.shape[0]
 
 model.set_state("train")
 _ , dst_fake = train_rand_sampler.sample(size)
-src_embed , target_embed= model(src_cut, dst_cut ,time_cut , edge_cut ,True)
-_ , background_embed = model(src_cut , dst_fake, time_cut ,edge_cut , False)
+src_embed , target_embed= model(src_cut, dst_cut ,time , edge_cut ,True)
+_ , background_embed = model(src_cut , dst_fake, time ,edge_cut , False)
 
 model.set_state("eval")
 _ , dst_fake = valid_rand_sampler.sample(size)
-src_embed , target_embed= model(src_cut, dst_cut ,time_cut , edge_cut ,True)
-_ , background_embed = model(src_cut , dst_fake, time_cut ,edge_cut , False)
+src_embed , target_embed= model(src_cut, dst_cut ,time , edge_cut ,True)
+_ , background_embed = model(src_cut , dst_fake, time ,edge_cut , False)
 
 ```

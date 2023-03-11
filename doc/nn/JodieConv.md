@@ -25,6 +25,8 @@ TGNonv from [Predicting Dynamic Embedding Trajectory in Temporal Interaction Net
 - aggregator_type ： Type of the message aggregator
 - memory_updater_type ：Type of the memory updater
 
+---
+
 > `forward(source_nodes, destination_nodes, negative_nodes = None, edge_times=None, edge_idxs=None, n_neighbors=None)`
 
 Compute graph network layer
@@ -34,7 +36,8 @@ Compute graph network layer
 - source_nodes : `numpy.ndarray` : Input a batch source node set
 - destination_nodes : `numpy.ndarray` ：Input a batch target node set
 - negative_nodes : `numpy.ndarray` : Input a batch edge time set. Can be entered as None
-- edge_times : `numpy.ndarray` : Input a batch edge index set
+- edge_times : `numpy.ndarray` : Input a batch edge time  set
+- edge_idxs : `numpy.ndarray` : Input a batch edge index set
 - n_neighbors : `int`: The number of neighbor samples
 
 > `set_state(state)`
@@ -47,7 +50,7 @@ Compute graph network layer
 
 **Example**:
 
-```
+```python
 train_src = numpy.array([0,5,6,4])
 train_dst = num.array([2,5,1,2])
 
@@ -55,6 +58,7 @@ valid_src = numpy.array([4,8,6,1])
 valid_dst = num.array([6,5,0,2])
 
 edge_cut = numpy.arange(len(train_src))
+time = np.random.randint(0,10,train.shape)
 
 train_rand_sampler = RandEdgeSampler(train_src, train_dst)
 valid_rand_sampler = RandEdgeSampler(valid_src, valid_dst)
@@ -65,11 +69,11 @@ _ , dst_fake = train_rand_sampler.sample(size)
 
 model.set_state("train")
 src_embed, target_embed,background_embed= model(source_nodes=src_cut,destination_nodes = dst_cut,
-                            negative_nodes=dst_fake, edge_times = time_cut, edge_idxs = edge_cut)
+                            negative_nodes=dst_fake, edge_times = time , edge_idxs = edge_cut)
 
 _ , dst_fake = valid_rand_sampler.sample(size)
 
 model.set_state("eval")
 src_embed, target_embed,background_embed= model(source_nodes=train_src,destination_nodes = valid_dst,
-                            negative_nodes=dst_fake, edge_times = time_cut, edge_idxs = edge_cut)
+                            negative_nodes=dst_fake, edge_times = time , edge_idxs = edge_cut)
 ```

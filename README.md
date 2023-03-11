@@ -31,7 +31,7 @@ cd  DYGL-lib
 python run_model.py --task link_prediction --model TGN --dataset wikipedia --gpu 0
 ```
 
-该脚本在默认配置下，在wikipeida数据集上通过0号gpu运行TGN模型，以进行链接预测任务。**lib中数据集、模型和任务之间的对应关系表格如下**
+该脚本在默认配置下，在wikipeida数据集上通过gpu 0运行TGN模型，以进行链接预测任务。**lib中数据集、模型和任务之间的对应关系表格如下**
 
 ### Visualization
 
@@ -44,7 +44,7 @@ python run_model.py --task link_prediction --model TGN --dataset wikipedia --gpu
 
 ### Reproduced Model List
 
-lib中所复现的全部模型列表，他们的简称和相关论文如下，
+lib中所复现的全部模型列表，他们的简称和相关论文如下， 
 
 ## API REFERENCE
 
@@ -76,4 +76,10 @@ lib中所复现的全部模型列表，他们的简称和相关论文如下，
 
 ### lib.evaluator
 
-### lib.utils
+#### task for link prediction
+
+[MergeLayer](./doc/evalution/edge_aggregation.md) | [link_prediction_metric](./doc/evalution/edge_aggregation.md)
+
+#### task for node classification
+
+[MLP](./doc/evalution/node_class.md)

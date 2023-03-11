@@ -26,6 +26,8 @@ TGNonv from [Learning Representation over Dynamic Graph](https://openreview.net/
 - memory_updater_type ：Type of the memory updater
 - dyrep : Whether to run the model as DyRep
 
+---
+
 > `forward(source_nodes, destination_nodes, negative_nodes = None, edge_times=None, edge_idxs=None, n_neighbors=None)`
 
 Compute graph network layer
@@ -35,7 +37,8 @@ Compute graph network layer
 - source_nodes : `numpy.ndarray` : Input a batch source node set
 - destination_nodes : `numpy.ndarray` ：Input a batch target node set
 - negative_nodes : `numpy.ndarray` : Input a batch edge time set. Can be entered as None
-- edge_times : `numpy.ndarray` : Input a batch edge index set
+- edge_times : `numpy.ndarray` : Input a batch edge time set
+- edge_index : `numpy.ndarray` : Input a batch edge index set
 - n_neighbors : `int`: The number of neighbor samples
 
 > `set_state(state)`
@@ -48,7 +51,7 @@ Compute graph network layer
 
 **Example**:
 
-```
+```python
 train_src = numpy.array([0,5,6,4])
 train_dst = num.array([2,5,1,2])
 
@@ -56,6 +59,7 @@ valid_src = numpy.array([4,8,6,1])
 valid_dst = num.array([6,5,0,2])
 
 edge_cut = numpy.arange(len(train_src))
+time = numpy.random.randint(0,10,train.shape)
 
 train_rand_sampler = RandEdgeSampler(train_src, train_dst)
 valid_rand_sampler = RandEdgeSampler(valid_src, valid_dst)
