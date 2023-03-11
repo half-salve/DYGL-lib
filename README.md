@@ -1,42 +1,53 @@
-# lib
-
-lib 目前支持**动态图表征提取、链接预测**和**节点分类**任务。
+![](./doc/figure_logo.png)
+#  DYGL-lib([中文版](./readme_zh.md))
+Difficulty in reproducing the code and inconsistent experimental methods hinder the development of the dynamic network field. We present DYDGL-library, a unified, comprehensive, and extensible library for dynamic graph representation learning. The main goal of the library is to make dynamic graph representation learning available for researchers in a unified easy-to-use framework. To accelerate the development of new models, we design unified model interfaces based on unified data formats, which effectively encapsulate the details of the implementation. Experiments demonstrate the predictive performance of the models implemented in the library on node classification and link prediction. Our library will contribute to the standardization and reproducibility in the field of the dynamic graph.
+DYGL currently supports **Dynamic Graph Representation Extraction, Link Prediction** and **Node Classification** tasks.
 
 ## Overall Framework
 
-* **Configuration Module**:负责管理框架中的涉及的所有参数。
-* **Data Module**:负责下载数据集、对数据集进行预处理、保存和加载数据集。
-* **Model Module**:负责初始化基线模型或自定义模型。
-* **Evalution Module**:提供统一的下游任务评测模型，并通过多个指标评估算法性能。
+* **Configuration Module**: Responsible for managing all parameters involved in the framework.
+* **Data Module**: Responsible for downloading datasets, preprocessing datasets, saving and loading datasets.
+* **Model Module**: Responsible for initializing the baseline model or custom model.
+* **Evaluation Module**: Provides a unified downstream task evaluation model, and evaluates algorithm performance through multiple indicators.
 
 ## GET STARTED
 
 ### Install and Setup
 
-lib只能从源代码安装
+DYGL can only be installed from source
 
 ```shell
 git clone https://github.com/half-salve/DYGL-lib
 cd  DYGL-lib
 ```
 
+### Configure Dependencies
+After obtaining the source code, you can configure the environment.
+Our code is based on Python version 3.7 and PyTorch version 1.12.0+. For example, if your CUDA version is 11.6, you can install PyTorch with the following command.
+
+conda:
+```sh
+conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
+conda install -c dglteam/label/cu116 dgl
+```
+
 ### Quick start
 
-在运行模型之前，确保相关的代码和lib在同级目录下，lib的数据集会被处理成dgl.graph的数据格式储存在DYGL_dataset目录下。
+Before running the model, make sure that the relevant code and lib are in the same directory. The lib dataset will be processed into the data format of dgl.graph and stored in the DYGL_dataset directory.
 
-脚本'run_model.py'用于在lib中训练和评估单个模型。运行'run_model.py'时，必须指定以下三个参数，即
-**task、dataset和model**。在参数中可以选择**gpu**的编号，如果不指定的话，会检测是否有可以使用的显卡，如果有可以使用的显卡，会使用默认使用**编号0**的显卡，如果没有可使用的显卡，会使用**cpu**来运行模型。例如：
+The shell 'run_model.py' is used to train and evaluate a single model in lib. When running `'run_model.py'`, the following three parameters must be specified, namely
+`task, dataset and model`. You can choose the number of `gpu` in the parameter. If you don’t specify it, it will check whether there is a graphics card that can be used. If there is a graphics card that can be used, it will use the graphics card with `number 0` by default. If there is no graphics card that can be used The graphics card used will use `cpu` to run the model. For example:
 
 ```sh
 python run_model.py --task link_prediction --model TGN --dataset wikipedia --gpu 0
 ```
 
-该脚本在默认配置下，在wikipeida数据集上通过gpu 0运行TGN模型，以进行链接预测任务。**lib中数据集、模型和任务之间的对应关系表格如下**
+The shell runs the TGN model via `gpu 0` on the wikipeida dataset with default configuration for link prediction tasks.
 
 ### Visualization
 
-在模型的训练过程中，我们会记录每个epoch训练过程中loss的值和训练过程中和训练后的评估结果，他们通过.npy格式储存在 `./metric`文件夹中。
-模型运行一次后，可以通过使用以下命令进行可视化：
+During the training process of the model, we will record the loss value during each epoch training process and the evaluation results during and after training, which are stored in the `./metric` folder in .npy format.
+After the model has been run once, it can be visualized by using the following command:
 
 ```sh
 
@@ -44,13 +55,21 @@ python run_model.py --task link_prediction --model TGN --dataset wikipedia --gpu
 
 ### Reproduced Model List
 
-lib中所复现的全部模型列表，他们的简称和相关论文如下， 
+A list of all models reproduced in DYGL, their abbreviations and related papers are as follows
+| source    | model | title                                                                             |
+|-----------|-------|-----------------------------------------------------------------------------------|
+| ICLR 2019 | dyrep | Learning Representation over Dynamic Graph                                        |
+| KDD 2019  | Jodie | Predicting Dynamic Embedding Trajectory in Temporal Interaction Networks          |
+| ICLR 2020 | TGAT  | Inductive Representation Learning on Temporal Graphs                              |
+| ICLR 2020 | TGN   | Temporal Graph Networks for Deep Learning on Dynamic Graphs                       |
+| ICLR 2021 | CAW   | INDUCTIVE REPRESENTATION LEARNING IN TEMPORAL NETWORKS VIA CAUSAL ANONYMOUS WALKS |
+
 
 ## API REFERENCE
 
 ### lib.config
 
-[DGCONFIG](./doc/config/ConfigParser.md) | [ConfigParser](./doc/config/ConfigParser.md)
+[DGCONFIG(Base Class)](./doc/config/ConfigParser.md) | [ConfigParser](./doc/config/ConfigParser.md)
 
 ### lib.data
 
