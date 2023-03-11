@@ -1,10 +1,10 @@
-from .TGATconv import TGAN as TGAT
+from .tgatconv import TGATConv
 from ..dataloading import TGATNeighborFinder,NeighborFinder
 
-from .CAWconv import CAW
-from .CAWconv import CAWNeighborFinder
+from .cawconv import CAWConv
+from .cawconv import CAWNeighborFinder
 
-from .TGNconv import TGN
+from .tgnconv import TGNConv
 
 from ..utils import numpy_from_mask,init_adjacency_list,compute_time_statistics
 import torch
@@ -33,7 +33,7 @@ def TGAT_init(config,Data,task):
     full_adj_list = init_adjacency_list(max_idx, src, dst, edge_idx ,t)
     full_ngh_finder = NeighborFinder(full_adj_list, config["uniform"])
 
-    model = TGAT([train_ngh_finder,full_ngh_finder], Data.ndata["feat"], Data.edata["edge_feat"],
+    model = TGATConv([train_ngh_finder,full_ngh_finder], Data.ndata["feat"], Data.edata["edge_feat"],
             num_layers=config["n_layer"], use_time=config["time"], agg_method=config["agg_method"], attn_mode=config["attn_mode"],
             seq_len=config["n_degree"] , n_head=config["n_head"], drop_out=config["drop_out"])
     
@@ -70,8 +70,8 @@ def TGN_init(config,Data,task):
     mean_time_shift_src, std_time_shift_src, mean_time_shift_dst, std_time_shift_dst = \
                     compute_time_statistics(src, dst,  t)
     
-    model = TGN(neighbor_finder=[train_ngh_finder,full_ngh_finder], node_features = Data.ndata["feat"],
-                        edge_features = Data.edata["edge_feat"], device=config["device"],
+    model = TGNConv(ngh_finders = [train_ngh_finder,full_ngh_finder], n_feat = Data.ndata["feat"],
+                        e_feat= Data.edata["edge_feat"], device=config["device"],
                         n_layers = config["n_layer"],
                         n_heads = config["n_head"], dropout = config["drop_out"], use_memory = config["use_memory"],
                         message_dimension = config["message_dim"], memory_dimension = config["memory_dim"],
@@ -120,7 +120,7 @@ def CAW_init(config,Data,task):
     empty = torch.zeros(Data.edata["edge_feat"].shape[1]).view(1,-1)
     edge_features = torch.vstack([empty, Data.edata["edge_feat"]])
     
-    model = CAW([train_ngh_finder,full_ngh_finder], Data.ndata["feat"],  edge_features,agg=config["agg"],
+    model = CAWConv([train_ngh_finder,full_ngh_finder], Data.ndata["feat"],  edge_features,agg=config["agg"],
                 num_layers = config["n_layer"], use_time = config["time"]  , attn_agg_method = config["agg_method"],attn_mode = config["attn_mode"],
                 n_head = config["attn_n_head"], drop_out = config["drop_out"] , pos_dim = config["pos_dim"] ,pos_enc = config["pos_enc"] ,
                 num_neighbors = config["n_degree"] ,  walk_n_head = config["walk_n_head"] , walk_mutual = config["walk_mutual"] if config["walk_pool"] == 'attn' else False,

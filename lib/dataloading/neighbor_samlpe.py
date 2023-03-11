@@ -2,22 +2,13 @@ import numpy as np
 import torch
 from tqdm import tqdm
 '''
-@article{DBLP:journals/corr/abs-2002-07962,
-  author    = {Da Xu and
-               Chuanwei Ruan and
-               Evren K{\"{o}}rpeoglu and
-               Sushant Kumar and
-               Kannan Achan},
-  title     = {Inductive Representation Learning on Temporal Graphs},
-  journal   = {CoRR},
-  volume    = {abs/2002.07962},
-  year      = {2020},
-  url       = {https://arxiv.org/abs/2002.07962},
-  eprinttype = {arXiv},
-  eprint    = {2002.07962},
-  timestamp = {Mon, 02 Mar 2020 16:46:06 +0100},
-  biburl    = {https://dblp.org/rec/journals/corr/abs-2002-07962.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+@inproceedings{tgn_icml_grl2020,
+    title={Temporal Graph Networks for Deep Learning on Dynamic Graphs},
+    author={Emanuele Rossi and Ben Chamberlain and Fabrizio Frasca and Davide Eynard and Federico 
+    Monti and Michael Bronstein},
+    booktitle={ICML 2020 Workshop on Graph Representation Learning},
+    year={2020}
+}
 
 '''
 class NeighborFinder:

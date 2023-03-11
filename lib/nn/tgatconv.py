@@ -354,7 +354,7 @@ class AttnModel(torch.nn.Module):
         return output, attn
 
 
-class TGAN(torch.nn.Module):
+class TGATConv(torch.nn.Module):
     def __init__(self, ngh_finders, n_feat, e_feat,
                  attn_mode='prod', use_time='time', agg_method='attn', 
                  num_layers=3, n_head=4, null_idx=0, drop_out=0.1, seq_len=None):
@@ -373,7 +373,7 @@ class TGAN(torch.nn.Module):
         --n_feat                            raw features of nodes
         --e_feat                            raw edge features of links
         """
-        super(TGAN, self).__init__()
+        super(TGATConv, self).__init__()
         self.train_ngh_finder = ngh_finders[0]
         self.full_ngh_finder = ngh_finders[1]
 

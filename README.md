@@ -49,6 +49,7 @@ lib中所复现的全部模型列表，他们的简称和相关论文如下，
 ## API REFERENCE
 
 ### lib.config
+
 [DGCONFIG](./doc/config/ConfigParser.md) | [ConfigParser](./doc/config/ConfigParser.md)
 
 ### lib.data
@@ -63,13 +64,16 @@ lib中所复现的全部模型列表，他们的简称和相关论文如下，
 
 [RedditDataset](./doc/data/Reddit.md) | [WikipediaDataset](./doc/data/wikipedia.md)
 
-#### [lib.data.Utilities]()
+#### [lib.data.Utilities](./doc/data/data.utils.md)
 
 ### lib.dataloading
+
 #### [RandEdgeSampler](./doc/dataloading/RandEdgeSampler.md) | [NeighborFinder](./doc/dataloading/NeighborFinder.md)
 
-### lib.evaluator
-
 ### lib.nn
+
+[CAWconv](./doc/nn/CAWConv.md) | [TGNconv](./doc/nn/TGNConv.md) | [TGAT](./doc/nn/TGATConv.md) | [Jodie](./doc/nn/JodieConv.md) | [DyRep](./doc/nn/derep.md)
+
+### lib.evaluator
 
 ### lib.utils

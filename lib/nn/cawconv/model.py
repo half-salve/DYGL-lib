@@ -345,9 +345,9 @@ class AttnModel(torch.nn.Module):
         return output, attn
 
 
-class CAWN(torch.nn.Module):
-    def __init__(self, ngh_finders,n_feat, e_feat, agg='tree',
-                 attn_mode='prod', use_time='time', attn_agg_method='attn',
+class CAWConv(torch.nn.Module):
+    def __init__(self, ngh_finders,n_feat, e_feat, 
+                 agg='tree',attn_mode='prod', use_time='time', attn_agg_method='attn',
                  pos_dim=0, pos_enc='spd', walk_pool='attn', walk_n_head=8, walk_mutual=False,
                  num_layers=3, n_head=4, drop_out=0.1, num_neighbors=20, cpu_cores=1,
                  verbosity=1, walk_linear_out=False):
@@ -389,7 +389,7 @@ class CAWN(torch.nn.Module):
                                 
         '''
 
-        super(CAWN, self).__init__()
+        super(CAWConv, self).__init__()
         self.logger = logging.getLogger(__name__)
 
         self.train_ngh_finder = ngh_finders[0]
@@ -513,7 +513,7 @@ class CAWN(torch.nn.Module):
 
         return src_embed, tgt_embed
     
-    def forward(self, src_idx_l, tgt_idx_l , cut_time_l, e_idx_l=None, flag_for_cur_edge=True,test=False):
+    def forward(self, src_idx, tgt_idx , cut_time, e_idx=None, flag_for_cur_edge=True,test=False):
         ''''
         1. grab subgraph for src, tgt, bgd
         2. add positional encoding for src & tgt nodes
@@ -526,14 +526,14 @@ class CAWN(torch.nn.Module):
         # print("e_idx_l",e_idx_l.shape, e_idx_l.dtype)
         self.flag_for_cur_edge = flag_for_cur_edge
 
-        subgraph_src= self.grab_subgraph(src_idx_l, cut_time_l, e_idx_l=e_idx_l)
+        subgraph_src= self.grab_subgraph(src_idx, cut_time, e_idx_l=e_idx)
         
         if not self.flag_for_cur_edge :
-            subgraph_tgt = self.grab_subgraph(tgt_idx_l, cut_time_l, e_idx_l=None)
+            subgraph_tgt = self.grab_subgraph(tgt_idx, cut_time, e_idx_l=None)
         else:
-            subgraph_tgt = self.grab_subgraph(tgt_idx_l, cut_time_l, e_idx_l=e_idx_l)
+            subgraph_tgt = self.grab_subgraph(tgt_idx, cut_time, e_idx_l=e_idx)
 
-        src_embed,dst_embed = self.forward_embeddings(src_idx_l, tgt_idx_l, cut_time_l, (subgraph_src,subgraph_tgt), test=test)
+        src_embed,dst_embed = self.forward_embeddings(src_idx, tgt_idx, cut_time, (subgraph_src,subgraph_tgt), test=test)
 
         return src_embed,dst_embed 
     

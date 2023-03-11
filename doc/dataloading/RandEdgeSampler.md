@@ -11,7 +11,8 @@ Parmeters:
 - dst_list ：list of target nodes in the edges of the dynamic graph
 - seed ：random seed
 
-Example:
+---
+**Example**:
 
 (我们通过这个采样器采样出 `size`个边)
 

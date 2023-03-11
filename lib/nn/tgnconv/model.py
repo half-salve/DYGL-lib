@@ -14,33 +14,33 @@ from .time_encoding import TimeEncode
 
 
 
-class TGN(torch.nn.Module):
-  def __init__(self, neighbor_finder, node_features, edge_features, device, 
+class TGNConv(torch.nn.Module):
+  def __init__(self, ngh_finders, n_feat, e_feat, device, 
                #以上是必须初始化的参数
-               n_layers=2,n_heads=2, dropout=0.1, use_memory=False,
+               n_layers=2,n_heads=2, dropout=0.1, use_memory=True,
                memory_update_at_start=True, message_dimension=100,
                memory_dimension=500, embedding_module_type="graph_attention",
-               message_function="mlp",
+               message_function="identity",
                mean_time_shift_src=0, std_time_shift_src=1, mean_time_shift_dst=0,
                std_time_shift_dst=1, n_neighbors=20, aggregator_type="last",
                memory_updater_type="gru",
                use_destination_embedding_in_message=False,
                use_source_embedding_in_message=False,
                dyrep=False):
-    super(TGN, self).__init__()
+    super(TGNConv, self).__init__()
 
     self.n_layers = n_layers
 
 
-    self.train_ngh_finder = neighbor_finder[0]
-    self.full_ngh_finder = neighbor_finder[1]
+    self.train_ngh_finder = ngh_finders[0]
+    self.full_ngh_finder = ngh_finders[1]
 
     self.neighbor_finder = None
     self.device = device
     self.logger = logging.getLogger(__name__)
 
-    self.node_raw_features = node_features.float().to(device)
-    self.edge_raw_features = edge_features.float().to(device)
+    self.node_raw_features = n_feat.float().to(device)
+    self.edge_raw_features = e_feat.float().to(device)
 
     self.feat_dim = self.node_raw_features.shape[1]
     self.n_nodes = self.node_raw_features.shape[0]

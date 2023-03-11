@@ -1,2 +1,6 @@
-from .TGATconv import TGAN as TGAT
-from .init_model import get_model
+from .tgatconv import TGATConv
+from .cawconv import CAWConv
+from .dyrepconv import DyRepConv
+from .jodieconv import JodieConv
+from .tgnconv import TGNConv
+

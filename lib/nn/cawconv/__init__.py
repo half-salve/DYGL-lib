@@ -1,2 +1,2 @@
-from .model import CAWN as CAW
+from .model import CAWConv
 from .graph import NeighborFinder as CAWNeighborFinder
