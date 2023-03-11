@@ -1,4 +1,4 @@
-<div align=center><img src="./doc/figure2.png"></div>
+<div align=center><img src="./doc/3.png"></div>
 
 # DYGL-lib
 
