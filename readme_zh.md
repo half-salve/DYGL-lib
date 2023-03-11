@@ -1,4 +1,4 @@
-<div align=center><img src="./doc/3.png"></div>
+![](./doc/3.png)
 
 # DYGL-lib
 
