@@ -1,4 +1,6 @@
-![](./doc/figure_logo.png)
+
+<div align=center><img src="./doc/figure2.jpg"></div> 
+
 #  DYGL-lib([中文版](./readme_zh.md))
 Difficulty in reproducing the code and inconsistent experimental methods hinder the development of the dynamic network field. We present DYDGL-library, a unified, comprehensive, and extensible library for dynamic graph representation learning. The main goal of the library is to make dynamic graph representation learning available for researchers in a unified easy-to-use framework. To accelerate the development of new models, we design unified model interfaces based on unified data formats, which effectively encapsulate the details of the implementation. Experiments demonstrate the predictive performance of the models implemented in the library on node classification and link prediction. Our library will contribute to the standardization and reproducibility in the field of the dynamic graph.
 DYGL currently supports **Dynamic Graph Representation Extraction, Link Prediction** and **Node Classification** tasks.
