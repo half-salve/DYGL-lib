@@ -5,12 +5,12 @@ Difficulty in reproducing the code and inconsistent experimental methods hinder 
 DYGL currently supports **Dynamic Graph Representation Extraction, Link Prediction** and **Node Classification** tasks.
 
 ## Overall Framework
-
+![](./doc/flow.png)
 * **Configuration Module**: Responsible for managing all parameters involved in the framework.
 * **Data Module**: Responsible for downloading datasets, preprocessing datasets, saving and loading datasets.
 * **Model Module**: Responsible for initializing the baseline model or custom model.
 * **Evaluation Module**: Provides a unified downstream task evaluation model, and evaluates algorithm performance through multiple indicators.
-
+* **Excution Module**: The user defines the loss function, selects the optimizer and the specific process of training.
 ## GET STARTED
 
 ### Install and Setup

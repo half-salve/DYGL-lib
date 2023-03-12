@@ -6,15 +6,16 @@
 DYGL 目前支持**动态图表示提取、链接预测**和**节点分类**任务。。
 
 ## Overall Framework
+![](./doc/flow.png)
+* **Configuration Module**:负责管理框架中的涉及的所有参数。
 
-***Configuration Module**:负责管理框架中的涉及的所有参数。
+* **Data Module**:负责下载数据集、对数据集进行预处理、保存和加载数据集。
 
-***Data Module**:负责下载数据集、对数据集进行预处理、保存和加载数据集。
+* **Model Module**:负责初始化基线模型或自定义模型。
 
-***Model Module**:负责初始化基线模型或自定义模型。
+* **Evalution Module**:提供统一的下游任务评测模型，并通过多个指标评估算法性能。
 
-***Evalution Module**:提供统一的下游任务评测模型，并通过多个指标评估算法性能。
-
+* **Excution Module**:用户自己定义loss函数,选取优化器和训练的具体流程。
 ## GET STARTED
 
 ### Install and Setup
@@ -53,7 +54,7 @@ conda install-cdglteam/label/cu116dgl
 
 在运行模型之前，确保相关的代码和lib在同级目录下，lib的数据集会被处理成dgl.graph的数据格式储存在DYGL_dataset目录下。
 
-脚本'run_model.py'用于在lib中训练和评估单个模型。运行'run_model.py'时，必须指定以下三个参数，即
+脚本`run_model.py`用于在DYGL中训练和评估单个模型。运行`run_model.py`时，必须指定以下三个参数，即
 
 **task、dataset和model**。在参数中可以选择**gpu**的编号，如果不指定的话，会检测是否有可以使用的显卡，如果有可以使用的显卡，会使用默认使用**编号0**的显卡，如果没有可使用的显卡，会使用**cpu**来运行模型。例如：
 
@@ -81,17 +82,11 @@ python run_model.py--tasklink_prediction--modelTGN--datasetwikipedia--gpu0
 lib中所复现的全部模型列表，他们的简称和相关论文如下
 
 | source    | model | title                                                                             |
-
 |-----------|-------|-----------------------------------------------------------------------------------|
-
 | ICLR 2019 | dyrep | Learning Representation over Dynamic Graph                                        |
-
 | KDD 2019  | Jodie | Predicting Dynamic Embedding Trajectory in Temporal Interaction Networks          |
-
 | ICLR 2020 | TGAT  | Inductive Representation Learning on Temporal Graphs                              |
-
 | ICLR 2020 | TGN   | Temporal Graph Networks for Deep Learning on Dynamic Graphs                       |
-
 | ICLR 2021 | CAW   | INDUCTIVE REPRESENTATION LEARNING IN TEMPORAL NETWORKS VIA CAUSAL ANONYMOUS WALKS |
 
 ## API REFERENCE

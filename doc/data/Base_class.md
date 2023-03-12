@@ -32,12 +32,18 @@ Users can overwite these functions with their own data processing logic.
 
 Parameters：
 
-* name (str) – 数据集的名称
-* url (str) – 下载原始数据集的 URL。 默认值：无
-* raw_dir (str) – 指定将存储下载数据的目录或已存储输入数据的目录。 默认值：`os.getwd()/DYGL_dataset/`
-* save_dir (str) – 保存已处理数据集的目录。 默认值：与 raw_dir 相同
-* hash_key (tuple) – 作为哈希函数输入的值元组。 用户可以通过比较哈希值来区分来自同一数据集类的实例（及其在磁盘上的缓存）。 默认值：()，对应的哈希值为'f9065fa7'。
-* force_reload (bool) – 是否重新加载数据集。 默认值：假
+- name (str) – Name of the dataset
+
+- url (str) – Url to download the raw dataset. Default: None
+
+- raw_dir (str) – Specifying the directory that will store the downloaded data or the directory that already stores the input data. Default:`os.getwd()/DYGL_dataset/`
+
+- save_dir (str) – Directory to save the processed dataset. Default: same as raw_dir
+
+- hash_key (tuple) – A tuple of values as the input for the hash function. Users can distinguish instances (and their caches on the disk) from the same dataset class by comparing the hash values. Default: (), the corresponding hash value is 'f9065fa7'.
+
+- force_reload (bool) – Whether to reload the dataset. Default: False
+
 
 `url`
     The URL to download the dataset
