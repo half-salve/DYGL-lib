@@ -8,8 +8,8 @@ from lib.utils import get_data
 from lib.example import train_and_test
 parser = argparse.ArgumentParser('TGN self-supervised training')
 
-parser.add_argument('--dataset', type=str, default='wikipedia', help='data sources to use, try wikipedia or reddit',
-                    choices=["wikipedia" ,"Reddit","Mooc","redditlink"], )
+parser.add_argument('--dataset', type=str, default='UCI', help='data sources to use, try wikipedia or reddit',
+                    choices=["wikipedia" ,"Reddit","Mooc","redditlink","LastFM","UCI"], )
 parser.add_argument( '--model', type=str, default='TGN', help='select model that you want to use',
                     choices=["Jodie","TGN","DyRep","TGAT","CAW"], )
 parser.add_argument( '--task', type=str, default='link_prediction', help='select task that you want to use',
@@ -31,10 +31,10 @@ except:
 config=lib.ConfigParser(args)
 
 ### set up logger
-logger = get_logger([config["dataset"],config["model"],config["task"]])
+# logger = get_logger([config["dataset"],config["model"],config["task"]])
 ## get and dataset
 Data = get_data(config["dataset"],config["model"])
-
+sys.exit()
 # Initialize Model
 model = lib.get_model(config,Data,config["task"])
 

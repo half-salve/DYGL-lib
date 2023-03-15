@@ -1,5 +1,3 @@
-import ssl
-import urllib
 import os
 
 from .utils import file_download, process_edge_prediction
@@ -193,17 +191,22 @@ class RedditDataset(JODIEDataset):
 
     graph : :class:`dgl.DGLGraph`
         Graph of the dataset
-    train_mask: numpy.ndarray
-        Mask of training nodes
-    val_mask: numpy.ndarray
-        Mask of validation nodes
-    test_mask: numpy.ndarray
-        Mask of test nodes
-    features : Tensor
-        Node features
-    state :  Tensor
-        state labels
-
+    time: Timestamps on edges sorted by time
+    train_edge_mask: numpy.ndarray 
+        positive training edge mask for **Transductive task**
+    valid_edge_mask: numpy.ndarray
+        positive validation edge mask for **Transductive task**
+    test_edge_mask: numpy.ndarray 
+        positive testing edge mask for **Transductive task**
+    train_edge_observed_mask: numpy.ndarray
+        positive training edge mask for **Inductive task**
+    valid_edge_observed_mask: numpy.ndarray
+        positive validation edge mask for **Inductive task**
+    test_edge_observed_mask: numpy.ndarray
+        positive testing edge mask for **Inductive task**
+    features : Node features
+    edge_feat : edge features
+    state :  edge state change labels
 
 
     '''
@@ -253,21 +256,25 @@ class WikipediaDataset(JODIEDataset):
     
     Attributes
     ----------
-    num_classes : int
-        Number of classes for each node
+    
     graph : :class:`dgl.DGLGraph`
         Graph of the dataset
-
-    train_mask: numpy.ndarray
-        Mask of training nodes
-    val_mask: numpy.ndarray
-        Mask of validation nodes
-    test_mask: numpy.ndarray
-        Mask of test nodes
-    features : Tensor
-        Node features
-    state :  Tensor
-        state labels
+    time: Timestamps on edges sorted by time
+    train_edge_mask: numpy.ndarray 
+        positive training edge mask for **Transductive task**
+    valid_edge_mask: numpy.ndarray
+        positive validation edge mask for **Transductive task**
+    test_edge_mask: numpy.ndarray 
+        positive testing edge mask for **Transductive task**
+    train_edge_observed_mask: numpy.ndarray
+        positive training edge mask for **Inductive task**
+    valid_edge_observed_mask: numpy.ndarray
+        positive validation edge mask for **Inductive task**
+    test_edge_observed_mask: numpy.ndarray
+        positive testing edge mask for **Inductive task**
+    features : Node features
+    edge_feat : edge features
+    state :  edge state change labels
 
 
     '''
@@ -320,16 +327,22 @@ class MOOCDataset(JODIEDataset):
     graph : :class:`dgl.DGLGraph`
         Graph of the dataset
 
-    train_mask: numpy.ndarray
-        Mask of training nodes
-    val_mask: numpy.ndarray
-        Mask of validation nodes
-    test_mask: numpy.ndarray
-        Mask of test nodes
-    features : Tensor
-        Node features
-    state :  Tensor
-        state change  for each node
+    time: Timestamps on edges sorted by time
+    train_edge_mask: numpy.ndarray 
+        positive training edge mask for **Transductive task**
+    valid_edge_mask: numpy.ndarray
+        positive validation edge mask for **Transductive task**
+    test_edge_mask: numpy.ndarray 
+        positive testing edge mask for **Transductive task**
+    train_edge_observed_mask: numpy.ndarray
+        positive training edge mask for **Inductive task**
+    valid_edge_observed_mask: numpy.ndarray
+        positive validation edge mask for **Inductive task**
+    test_edge_observed_mask: numpy.ndarray
+        positive testing edge mask for **Inductive task**
+    features : Node features
+    edge_feat : edge features
+    state :  edge state change labels
 
 
     '''
@@ -373,23 +386,26 @@ class LastFMDataset(JODIEDataset):
     
     Attributes
     ----------
-    num_classes : int
-        Number of classes for each node
 
     graph : :class:`dgl.DGLGraph`
         Graph of the dataset
 
-    train_mask: numpy.ndarray
-        Mask of training nodes
-    val_mask: numpy.ndarray
-        Mask of validation nodes
-    test_mask: numpy.ndarray
-        Mask of test nodes
-    features : Tensor
-        Node features
-    state :  Tensor
-        state labels
-
+    time: Timestamps on edges sorted by time
+    train_edge_mask: numpy.ndarray 
+        positive training edge mask for **Transductive task**
+    valid_edge_mask: numpy.ndarray
+        positive validation edge mask for **Transductive task**
+    test_edge_mask: numpy.ndarray 
+        positive testing edge mask for **Transductive task**
+    train_edge_observed_mask: numpy.ndarray
+        positive training edge mask for **Inductive task**
+    valid_edge_observed_mask: numpy.ndarray
+        positive validation edge mask for **Inductive task**
+    test_edge_observed_mask: numpy.ndarray
+        positive testing edge mask for **Inductive task**
+    features : Node features
+    edge_feat : edge features
+    state :  edge state change labels
 
     '''
     def __init__(self, raw_dir=None, force_reload=False, verbose=True, transform=None):

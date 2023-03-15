@@ -1,20 +1,20 @@
 import torch
 import torch.nn as nn
 from torch.nn import init
-from combiner import Combiner
-from edge_updater import Edge_updater_nn
-from node_updater import TLSTM
+from .combiner import Combiner
+from .edge_updater import Edge_updater_nn
+from .node_updater import TLSTM
 from scipy.sparse import lil_matrix, find
 import numpy as np
 from numpy.random import choice
-from decayer import Decayer
-from attention import Attention
+from .decayer import Decayer
+from .attention import Attention
 import time
 
-class DyGNN(nn.Module):
+class DyGNNConv(nn.Module):
     def __init__(self, num_embeddings, embedding_dims, edge_output_size, device, w , is_att = False,transfer=False , nor =0, if_no_time=0, threhold = None, second_order=False, if_updated = 0, drop_p = 0, num_negative = 5 , act = 'tanh', if_propagation = 1 ,decay_method='exp',
                  weight = None, relation_size=None,bias = True):
-        super(DyGNN,self).__init__()
+        super(DyGNNConv,self).__init__()
         self.embedding_dims = embedding_dims
         self.num_embeddings = num_embeddings
         self.nor = nor
@@ -96,15 +96,6 @@ class DyGNN(nn.Module):
         self.hidden_tail_copy = nn.Embedding.from_pretrained(self.hidden_tail.weight.clone()).to(device)
         self.node_representations_copy = nn.Embedding.from_pretrained(self.node_representations.weight.clone()).to(device)
 
-        # if cuda:
-        #     self.cell_head = self.cell_head.cuda()
-        #     self.cell_tail = self.cell_tail.cuda()
-        #     self.node_representations = self.node_representations.cuda()
-        #     self.recent_timestamp = self.recent_timestamp.cuda()
-        #     self.tran_head_edge_head.cuda()
-        #     self.tran_head_edge_head.cuda()
-        #     self.tran_tail_edge_head.cuda()
-        #     self.tran_tail_edge_tail.cuda()
 
     def reset_time(self):
         self.recent_timestamp = torch.zeros((self.num_embeddings, 1), dtype = torch.float, requires_grad = False).to(self.device)
@@ -123,12 +114,10 @@ class DyGNN(nn.Module):
 
 
     def forward(self,interactions):
-
         test_time = False
-
         all_head_nodes = set()
         all_tail_nodes = set()
-               
+
         steps = len(interactions[:,0])
 
         node2timetsamp = dict()
@@ -180,7 +169,7 @@ class DyGNN(nn.Module):
                 head_node_rep = node2rep[head_index]
             else:
                 head_node_rep = self.node_representations(head_inx_lt)
-
+            #如果在node2rep(dict)存在则直接取值，如果不在从self.node_representations中取值
             if tail_index in node2rep:
                 tail_node_rep = node2rep[tail_index]
             else:
@@ -193,7 +182,7 @@ class DyGNN(nn.Module):
             else:
                 head_node_cell_head = self.cell_head(head_inx_lt)
                 head_node_hidden_head = self.hidden_head(head_inx_lt)
-
+            #如果在node2hidden_head(dict)存在则直接取值，如果不在从self.cell_head中取值
             if head_index in node2hidden_tail:
                 head_node_hidden_tail = node2hidden_tail[head_index]
             else:
@@ -226,11 +215,11 @@ class DyGNN(nn.Module):
 
             transed_head_delta_t = self.decayer(head_delta_t)#将时间差映射为具体的值
             transed_tail_delta_t = self.decayer(tail_delta_t)
-            #对源节点和目标节点的时间点计算值
+            #对源节点和目标节点的时间进行编码
 
             edge_info_head = self.edge_updater_head(head_node_rep, tail_node_rep)
             edge_info_tail = self.edge_updater_tail(head_node_rep, tail_node_rep)
-            #根据源节点和目标节点的值计算表征值
+            #根据源节点和目标节点的值计算边的表征
 
             #先计算源节点的特征
             if self.if_no_time:
@@ -248,6 +237,7 @@ class DyGNN(nn.Module):
                 output_rep_head.append(updated_head_node_rep)
             else:
                 output_rep_head.append(head_node_rep)
+
             # 再计算目标节点的特征
             if self.if_no_time:
                 updated_tail_node_hidden_tail, updated_tail_node_cell_tail, = self.node_updater_tail(edge_info_tail, (tail_node_hidden_tail, tail_node_cell_tail))
@@ -268,8 +258,8 @@ class DyGNN(nn.Module):
                 time4 = time.time()
                 print('update reps', str(time4-time3))
 
-
-            if self.if_propagation:#传播模块
+            #####以上特征的计算和更新已经完成
+            if self.if_propagation:#传播模块将这个改变传递给他们的邻居
                 head_node_head_neighbors, head_node_tail_neighbors = self.propagation(head_index, current_t, edge_info_head, 'head', node2cell_head, node2hidden_head, node2cell_tail, node2hidden_tail, node2rep, self.threhold, self.second_order)
                 tail_node_head_neighbors, tail_node_tail_neighbors = self.propagation(tail_index, current_t, edge_info_tail, 'tail', node2cell_head, node2hidden_head, node2cell_tail, node2hidden_tail, node2rep, self.threhold, self.second_order)
             else:
@@ -393,9 +383,6 @@ class DyGNN(nn.Module):
         return output_rep_head_tensor, output_rep_tail_tensor, head_neg_tensors, tail_neg_tensors
 
 
-
-    
-
     def get_rep(self, nodes, rep_type, rep_dict):
         if rep_type == 'node_rep':
             rep = self.node_representations(torch.LongTensor(nodes).to(self.device))
@@ -412,18 +399,12 @@ class DyGNN(nn.Module):
                 rep[nodes.index(nei),:] = rep_dict[nei]    
         return  rep      
 
-
-
-
     def get_neighbors(self,node,current_t,threhold=None):
         row_inx, col_inx, timestamps = find(self.interaction_timestamp) 
-
 
         head_inx = list(np.where(col_inx == node)[0])
         head_neighbors = row_inx[head_inx]
         head_timestamps = timestamps[head_inx]
-
-
 
         tail_inx = list(np.where(row_inx == node)[0])
         tail_neighbors = col_inx[tail_inx]
@@ -439,15 +420,7 @@ class DyGNN(nn.Module):
             tail_timestamps = tail_timestamps[tail_inx_th]
             tail_neighbors = tail_neighbors[tail_inx_th]
 
-
-
-
-
-
-
         return head_neighbors, tail_neighbors , head_timestamps, tail_timestamps
-
-
 
 
     def get_att_score(self,node, neighbors, node2rep):
@@ -458,14 +431,10 @@ class DyGNN(nn.Module):
 
         return self.attention(node_reps, nei_reps)
 
-        
-
+    
     def propagation(self, node, current_t, edge_info, node_type, node2cell_head, node2hidden_head, node2cell_tail, node2hidden_tail, node2rep, threhold = None, second_order=False):
 
-
-
         head_neighbors, tail_neighbors, head_timestamps, tail_timestamps = self.get_neighbors(node, current_t,threhold)
-
 
         head_neighbors = list(head_neighbors)
         head_timestamps = list(head_timestamps)
@@ -479,16 +448,11 @@ class DyGNN(nn.Module):
             head_delta_ts = current_t.repeat(len(head_timestamps),1) - torch.FloatTensor(head_timestamps).to(self.device).view(-1,1)
             transed_head_delta_ts = self.decayer(head_delta_ts)
 
-
-
-
-
             head_nei_cell = self.get_rep(head_neighbors, 'cell_head',node2cell_head)
             if self.if_no_time:
                 tran_head_nei_edge_info = head_nei_edge_info.repeat(len(head_neighbors),1)
             else:
                 tran_head_nei_edge_info = head_nei_edge_info.repeat(len(head_neighbors),1) * transed_head_delta_ts
-
 
             if self.is_att:
                 att_score_head = self.get_att_score(node, head_neighbors, node2rep)
@@ -508,12 +472,6 @@ class DyGNN(nn.Module):
             if second_order:
                 for  head_node_sec in head_neighbors:
                     self.second_propagation(head_node_sec, current_t , tran_head_nei_edge_info[0,:], 'head', node2cell_head, node2hidden_head, node2cell_tail, node2hidden_tail, node2rep, threhold)
-
-
-
-
-
-
 
         tail_neighbors = list(tail_neighbors)
         tail_timestamps = list(tail_timestamps)
@@ -674,28 +632,6 @@ class DyGNN(nn.Module):
 
         return loss
 
-
-
-        # for i,nei in enumerate(head_neighbors):
-        #     node2cell_head[nei] = head_nei_cell[i]
-        #     node2hidden_head[nei] = self.tanh(head_nei_cell[i])
-        #     if nei in node2hidden_tail:
-        #         node2rep[nei] = self.combiner(node2hidden_head[nei], node2hidden_tail[nei])
-        #     else:
-        #         node2rep[nei] = self.combiner(node2hidden_head[nei], self.hidden_tail(torch.LongTensor([nei])))
-
-        # for i, nei in enumerate(tail_neighbors):
-        #     node2cell_tail[nei] = tail_nei_cell[i]
-        #     node2hidden_tail[nei] = self.tanh(tail_nei_cell[i])
-        #     if nei in node2hidden_head:
-        #         node2rep[nei] = self.combiner(node2hidden_head[nei], node2hidden_tail[nei])
-        #     else:
-        #         node2rep[nei] = self.combiner(self.hidden_head(torch.LongTensor([nei])), node2hidden_tail)
-        # for ind, nei in head_neighbors:
-        #     if nei in node2cell_head:
-        #         head_nei_cell = node2cell_head[nei]
-        #     else:
-        #         head_nei_cell = self.cell_head(torch.LongTensor([node]))
 
 
 

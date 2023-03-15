@@ -5,7 +5,7 @@ import sys
 import numpy as np
 import random
 import torch
-from ..data import RedditDataset,WikipediaDataset,MOOCDataset
+from ..data import RedditDataset,WikipediaDataset,MOOCDataset,LastFMDataset,UCIDataset
 
 def get_logger(parms,log_level='INFO',save_dir=None ,name=None,):
     """
@@ -189,13 +189,15 @@ def compute_time_statistics(sources, destinations, timestamps):
 def get_data(name,model_name,start_id=0):
     if model_name == "CAW":
         start_id = 1
-    if name == "wikipedia":
+    elif name == "wikipedia":
         data = WikipediaDataset(start_id=start_id)[0]
-    if name == "Reddit":
+    elif name == "Reddit":
         data =  RedditDataset(start_id=start_id)[0]
-    if name == "Mooc":
+    elif name == "Mooc":
         data = MOOCDataset(start_id=start_id)[0]
-    if name == "Mooc":
-        pass
+    elif name == "LastFM":
+        data = LastFMDataset(start_id=start_id)[0]
+    elif name == "UCI":
+        data = UCIDataset(start_id=start_id)[0]
 
     return data

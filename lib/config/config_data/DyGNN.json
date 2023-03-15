@@ -1,16 +1,13 @@
-{"dataset": "bitalpha",
-  "batch_size": 200,
+{
+  "bs": 128,
   "learning_rate": 0.001,
   "num_negative": 1,
-  "train_ratio": 0.7,
-  "valid_ratio": 0.15,
   "act": "tanh",
   "transfer": 1,
-  "drop_p": 0,
+  "drop_out": 0,
   "if_propagation": 1,
   "is_att": 1,
   "w": 2.0,
-  "seed": 0,
   "reset_rep": 1,
   "decay_method": "log",
   "nor": 0,
@@ -20,5 +17,5 @@
   "threhold": null,
   "second_order": 0,
   "embedding_dims": 64,
-  "edge_output_size": 64,
-  "gpu": 0}
+  "edge_output_size": 64
+  }

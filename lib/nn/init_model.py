@@ -1,10 +1,12 @@
 from .tgatconv import TGATConv
-from ..dataloading import TGATNeighborFinder,NeighborFinder
+from ..dataloading import NeighborFinder
 
 from .cawconv import CAWConv
 from .cawconv import CAWNeighborFinder
 
 from .tgnconv import TGNConv
+
+from .dygnnconv import DyGNNConv
 
 from ..utils import numpy_from_mask,init_adjacency_list,compute_time_statistics
 import torch
@@ -136,11 +138,17 @@ def get_model(config,Data,task):
         model = CAW_init(config,Data,task)
     elif config["model"] == "Jodie" or config["model"] == "TGN" or config["model"] == "DeRep":
         model = TGN_init(config,Data,task)
+    elif config["model"] == "DyGNN":
+        model = DyGNN_init(config,Data,task)
     else:
         raise "error"
 
     return model
 
 
-
-
+def DyGNN_init(config,Data,task):
+    num_nodes = int(Data.number_of_nodes())
+    model = DyGNNConv(num_nodes,config["embedding_dims"],config["edge_output_size"],config["device"],
+                      config["w"], config["is_att"], config["transfer"], config["nor"], config["if_no_time"], 
+                      config["threhold"], config["second_order"], config["if_updated"], config["drop_out"],
+                      config["num_negative"], config["act"], config["if_propagation"], config["decay_method"])

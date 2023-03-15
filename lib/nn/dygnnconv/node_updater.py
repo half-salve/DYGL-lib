@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.nn import init
-from decayer import Decayer
+from .decayer import Decayer
 
 class TLSTM(nn.Module):
 	def __init__(self,input_size, hidden_size,  bias = True):
