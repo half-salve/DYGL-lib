@@ -16,6 +16,7 @@ class DyGNNConv(nn.Module):
                  weight = None, relation_size=None,bias = True):
         super(DyGNNConv,self).__init__()
         self.embedding_dims = embedding_dims
+        self.feat_dim = embedding_dims
         self.num_embeddings = num_embeddings
         self.nor = nor
         #self.weight = weight.to(device)
@@ -96,7 +97,6 @@ class DyGNNConv(nn.Module):
         self.hidden_tail_copy = nn.Embedding.from_pretrained(self.hidden_tail.weight.clone()).to(device)
         self.node_representations_copy = nn.Embedding.from_pretrained(self.node_representations.weight.clone()).to(device)
 
-
     def reset_time(self):
         self.recent_timestamp = torch.zeros((self.num_embeddings, 1), dtype = torch.float, requires_grad = False).to(self.device)
         self.interaction_timestamp = lil_matrix((self.num_embeddings,self.num_embeddings),dtype = np.float32)
@@ -107,18 +107,19 @@ class DyGNNConv(nn.Module):
         self.hidden_head = nn.Embedding.from_pretrained(self.hidden_head_copy.weight.clone()).to(self.device)
         self.hidden_tail = nn.Embedding.from_pretrained(self.hidden_tail_copy.weight.clone()).to(self.device)
         self.node_representations = nn.Embedding.from_pretrained(self.node_representations_copy.weight.clone()).to(self.device)
+        
+    def stored_parameters(self):
+        self.train_parameters = [self.recent_timestamp,self.interaction_timestamp,self.cell_head,self.cell_tail,self.hidden_head,self.hidden_tail,self.node_representations]
 
-    def link_pred_with_update(self,test_data):
-        pass
+    def set_train_parameters(self):
+        self.recent_timestamp,self.interaction_timestamp,self.cell_head,self.cell_tail,self.hidden_head,self.hidden_tail,self.node_representations = self.train_parameters
 
-
-
-    def forward(self,interactions):
+    def forward(self,src,dst,time_cut):
         test_time = False
         all_head_nodes = set()
         all_tail_nodes = set()
 
-        steps = len(interactions[:,0])
+        steps = len(src)
 
         node2timetsamp = dict()
 
@@ -144,8 +145,8 @@ class DyGNNConv(nn.Module):
                 print(i,'1 step time', str(time1 - old_time) )
                 old_time = time1
 
-            head_index = int(interactions[i,0])
-            tail_index = int(interactions[i,1])
+            head_index = int(src[i])
+            tail_index = int(dst[i])
             all_head_nodes.add(head_index)
             all_tail_nodes.add(tail_index)
             #all_head_nodes,all_tail_nodes是节点的集合
@@ -153,13 +154,12 @@ class DyGNNConv(nn.Module):
             tail_inx_lt = torch.LongTensor([tail_index]).to(self.device)
 
 
-            timestamp = interactions[i,2]
+            timestamp = time_cut[i]
             current_t = torch.FloatTensor([timestamp]).view(-1,1).to(self.device)
 
             head_prev_t = self.recent_timestamp[head_index]
 
             tail_prev_t = self.recent_timestamp[tail_index]
-
 
             if test_time and i_condi:
                 time2 = time.time()
@@ -278,6 +278,7 @@ class DyGNNConv(nn.Module):
                     print('Get neighbors time', str(time5-time4))
             all_head_nodes = all_head_nodes | head_node_head_neighbors | tail_node_head_neighbors
             all_tail_nodes = all_tail_nodes | head_node_tail_neighbors | tail_node_tail_neighbors
+
 
             ### generate negative samples ###
             tail_candidates = all_tail_nodes - {head_index,tail_index} - head_node_tail_neighbors

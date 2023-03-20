@@ -41,6 +41,10 @@ class MergeLayer(torch.nn.Module):#torch.nn.Bilinear(self.feat_dim, self.feat_di
             assert(dim1 == dim2)
             self.fc = nn.Linear(dim1, 1)
             torch.nn.init.xavier_normal_(self.fc1.weight)
+    
+    def reset_weight(self):
+        torch.nn.init.xavier_normal_(self.fc1.weight)
+        torch.nn.init.xavier_normal_(self.fc2.weight)
 
     def forward(self, x1, x2):
         z_walk = None

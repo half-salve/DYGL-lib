@@ -16,6 +16,5 @@
   "if_no_time": 0,
   "threhold": null,
   "second_order": 0,
-  "embedding_dims": 64,
-  "edge_output_size": 64
+  "prefix": "raw"
   }

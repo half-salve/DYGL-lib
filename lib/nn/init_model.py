@@ -76,7 +76,7 @@ def TGN_init(config,Data,task):
                         e_feat= Data.edata["edge_feat"], device=config["device"],
                         n_layers = config["n_layer"],
                         n_heads = config["n_head"], dropout = config["drop_out"], use_memory = config["use_memory"],
-                        message_dimension = config["message_dim"], memory_dimension = config["memory_dim"],
+                        message_dimension = config["message_dim"], memory_dimension = Data.ndata["feat"].shape[1],
                         memory_update_at_start = not config["memory_update_at_end"],
                         embedding_module_type = config["embedding_module"],
                         message_function = config["message_function"],
@@ -136,7 +136,7 @@ def get_model(config,Data,task):
         model = TGAT_init(config,Data,task)
     elif config["model"]=="CAW":
         model = CAW_init(config,Data,task)
-    elif config["model"] == "Jodie" or config["model"] == "TGN" or config["model"] == "DeRep":
+    elif config["model"] == "Jodie" or config["model"] == "TGN" or config["model"] == "DyRep":
         model = TGN_init(config,Data,task)
     elif config["model"] == "DyGNN":
         model = DyGNN_init(config,Data,task)
@@ -148,7 +148,14 @@ def get_model(config,Data,task):
 
 def DyGNN_init(config,Data,task):
     num_nodes = int(Data.number_of_nodes())
-    model = DyGNNConv(num_nodes,config["embedding_dims"],config["edge_output_size"],config["device"],
+    edge_feat = Data.edata['edge_feat'].shape[1]
+    feat = Data.ndata['feat'].shape[1]
+    print(edge_feat,feat)
+    model = DyGNNConv(num_nodes,feat,edge_feat,config["device"],
                       config["w"], config["is_att"], config["transfer"], config["nor"], config["if_no_time"], 
                       config["threhold"], config["second_order"], config["if_updated"], config["drop_out"],
-                      config["num_negative"], config["act"], config["if_propagation"], config["decay_method"])
+                      config["num_negative"], config["act"], config["if_propagation"], config["decay_method"])  
+    # for var_name in  model.state_dict():
+    #     print(var_name)
+    
+    return model

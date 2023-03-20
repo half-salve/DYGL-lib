@@ -346,13 +346,13 @@ class MOOCDataset(JODIEDataset):
 
 
     '''
-    def __init__(self, raw_dir=None, force_reload=False, verbose=True, transform=None):
+    def __init__(self, raw_dir=None, force_reload=False, verbose=True, transform=None,start_id = 0):
         name="mooc"
         super(MOOCDataset, self).__init__(name=name,
                                             raw_dir=raw_dir,
                                             force_reload=force_reload,
                                             verbose=verbose,
-                                            transform=transform )
+                                            transform=transform ,start_id=start_id)
 
     def __len__(self):
         r"""Number of graphs in the dataset"""
@@ -408,13 +408,13 @@ class LastFMDataset(JODIEDataset):
     state :  edge state change labels
 
     '''
-    def __init__(self, raw_dir=None, force_reload=False, verbose=True, transform=None):
+    def __init__(self, raw_dir=None, force_reload=False, verbose=True, transform=None,start_id=0):
         name="lastfm"
         super(LastFMDataset, self).__init__(name=name,
                                             raw_dir=raw_dir,
                                             force_reload=force_reload,
                                             verbose=verbose,
-                                            transform=transform )
+                                            transform=transform ,start_id=start_id)
 
     def __len__(self):
         r"""Number of graphs in the dataset"""

@@ -175,7 +175,7 @@ def TGAT_link_prediction(config_object,model_object,dataset,Edge_predict):
                 "Edge_predictor":Edge_predictor.state_dict()
         }
         torch.save(state, checkpoints_path(epoch))
-
+    np.savetxt(os.path.join(save_dir,"link-train_metirc.txt"),np.array(train_metirc))
     test_metric = []
     test_observed_metric =[]
 
@@ -204,8 +204,6 @@ def TGAT_link_prediction(config_object,model_object,dataset,Edge_predict):
 
         test_observed_metric.append([nn_test_acc, nn_test_ap, nn_test_f1, nn_test_auc])
 
-        
-    np.savetxt(os.path.join(save_dir,"link-train_metirc.txt"),np.array(train_metirc))
 
     np.savetxt(os.path.join(save_dir,"link-valid_metric.txt"),np.array(valid_metric))
     np.savetxt(os.path.join(save_dir,"link-valid_observed_metric.txt"),np.array(valid_observed_metric))

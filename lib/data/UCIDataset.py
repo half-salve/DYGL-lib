@@ -1,7 +1,11 @@
 import os
 import sys
-from .utils import file_download, process_edge_prediction
+import datetime
+
+from .utils import wget_download, process_edge_prediction
 import numpy as np
+import pandas as  pd
+
 import dgl
 import torch
 from tqdm import tqdm
@@ -29,49 +33,38 @@ class  UCIDataset(DYGLDataset):
         
 
     def process(self):
-        PATH = os.path.join(self.raw_path, '{}.csv'.format(self._name))
-        sys.exit()
-        src_ids, dst_ids, ts_list, label_list = [], [], [], []
-        feat_l = []
-        idx_list = []
+        PATH = os.path.join(self.raw_path, '{}.txt'.format(self._name))
+        data  = pd.read_table(PATH ,sep=" ",header=None)
+        data.columns=["time","source","target","label"]
+        print(data["time"][0])
+        format = "%Y-%m-%d %H:%M:%S"
+        start_time = datetime.datetime.strptime(data["time"][0],format)
+        time = [(datetime.datetime.strptime(t,format) - start_time).seconds for t in data["time"]]
+        second_time = np.array(time)
+        src_ids = data["source"].values
+        dst_ids = data["target"].values
+        indexs = []
+        for index, (source , target) in enumerate(zip(src_ids,dst_ids)) :
+            if source == target:
+                indexs.append(index)
 
-        with open(PATH) as f:
-            s = next(f)
-            for idx, line in tqdm(enumerate(f)):
-                e = line.strip().split(',')
-                u = int(e[0])
-                i = int(e[1])
+        second_time = np.delete(second_time,indexs)
+        src_ids = np.delete(src_ids,indexs)
+        dst_ids = np.delete(dst_ids,indexs)
 
-                ts = int(float(e[2]))
-                label = int(e[3])
-                feat = np.array([float(x) for x in e[4:]])
+        min_id = min(src_ids.min(),dst_ids.min())
+        max_id = max(src_ids.max(),dst_ids.max())
+        
+        assert (max_id - min_id + 1 == len(np.unique(np.union1d(src_ids ,dst_ids))) ), "The source node numbers are not consecutive."
 
-                src_ids.append(u)
-                dst_ids.append(i)
-                ts_list.append(ts)
-                label_list.append(label)
-                idx_list.append(idx)
-                feat_l.append(feat)
-
-
-        time = np.array(ts_list)
-        label_f = np.array(label_list)[:, np.newaxis]
-
-        assert (max(src_ids) - min(src_ids) + 1 == len(set(src_ids))) , "The source node numbers are not consecutive."
-        assert (max(dst_ids) - min(dst_ids) + 1 == len(set(dst_ids))) , "The Target node numbers are not consecutive."
-        assert min(src_ids) == 0 , "the node num not start at 0"
-
-        max_src_ids = max(src_ids) + 1
-        dst_ids = [x + max_src_ids for x in dst_ids]
-
+        dst_ids = dst_ids - min_id
+        src_ids = src_ids - min_id
         #划分边集，将整体划分为0.7 0.15 0.15
-        val_time, test_time = np.quantile(time, [0.70, 0.85])
-        train_edge_mask = (ts_list <= val_time)
-        valid_edge_mask = (ts_list <= test_time) * (ts_list > val_time)
-        test_edge_mask = ts_list > test_time
+        val_time, test_time = np.quantile(second_time, [0.70, 0.85])
+        train_edge_mask = (second_time <= val_time)
+        valid_edge_mask = (second_time <= test_time) * (second_time > val_time)
+        test_edge_mask = second_time > test_time
 
-        indices = time.argsort()
-        feat_l = np.array(feat_l)[indices]
         if self.start_id < 0:
             raise "start_id must >=0"
         elif self.start_id > 0:
@@ -79,7 +72,7 @@ class  UCIDataset(DYGLDataset):
             dst_ids = [x + self.start_id for x in dst_ids]
             
         self._graph = dgl.graph((src_ids,dst_ids))
-        self._graph , train_edge_observed_mask,valid_edge_observed_mask,test_edge_observed_mask = process_edge_prediction(self._graph,time,train_val=0.7,val_test=0.85)
+        self._graph , train_edge_observed_mask,valid_edge_observed_mask,test_edge_observed_mask = process_edge_prediction(self._graph,second_time,train_val=0.7,val_test=0.85)
 
 
         self._graph.edata['train_edge_mask'] = generate_mask_tensor(train_edge_mask) 
@@ -90,21 +83,18 @@ class  UCIDataset(DYGLDataset):
         self._graph.edata['valid_edge_observed_mask'] = generate_mask_tensor(valid_edge_observed_mask)
         self._graph.edata['test_edge_observed_mask'] = generate_mask_tensor(test_edge_observed_mask)
         
-        self._graph.edata['edge_feat'] = torch.tensor(feat_l)
-        self._graph.ndata["feat"] = torch.zeros((self._graph.number_of_nodes() , \
-                                        self._graph.edata['edge_feat'].shape[1]))
-        
-        self._graph.edata['time'] = torch.tensor(time)
-        self._graph.edata['state'] = torch.tensor(label_f)
+        self._graph.edata['edge_feat'] = torch.zeros((self._graph.number_of_edges(),64))
 
-
+        self._graph.ndata["feat"] = torch.zeros((self._graph.number_of_nodes() ,64))
+        self._graph.edata['time'] = torch.tensor(second_time/3600)
+        print("processed raw data")
         self._print_info()
 
 
     def download(self):
         PATH = os.path.join(self.raw_path, '{}.txt'.format(self._name))
         print("Start Downloading File....")
-        file_download(self.url,PATH)
+        wget_download(self.url,PATH)
         print("finished Downloading File....")
 
 

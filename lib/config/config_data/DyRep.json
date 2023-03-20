@@ -4,7 +4,7 @@
     "n_degree": 10,
     "n_head": 2,
     "n_layer": 1,
-    "lr": 0.0001,
+    "learning_rate": 0.0001,
     "patience": 5,
     "drop_out": 0.1,
     "node_dim": 100,

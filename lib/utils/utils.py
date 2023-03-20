@@ -89,6 +89,7 @@ def set_random_seed(seed):
 
 
 def set_checkpoints_metric(config,parms):
+    parms = [str(i) for i in parms]
     checkpoints_root = './saved_checkpoints/'
     if not os.path.exists(checkpoints_root):
         os.makedirs(checkpoints_root)
@@ -186,18 +187,21 @@ def compute_time_statistics(sources, destinations, timestamps):
 
     return mean_time_shift_src, std_time_shift_src, mean_time_shift_dst, std_time_shift_dst
 
-def get_data(name,model_name,start_id=0):
+def get_data(name, model_name, start_id=0):
+    data = 0
     if model_name == "CAW":
         start_id = 1
-    elif name == "wikipedia":
+    if name == "wikipedia":
         data = WikipediaDataset(start_id=start_id)[0]
-    elif name == "Reddit":
+    if name == "Reddit":
         data =  RedditDataset(start_id=start_id)[0]
-    elif name == "Mooc":
+    if name == "Mooc":
         data = MOOCDataset(start_id=start_id)[0]
-    elif name == "LastFM":
+    if name == "LastFM":
         data = LastFMDataset(start_id=start_id)[0]
-    elif name == "UCI":
+    if name == "UCI":
         data = UCIDataset(start_id=start_id)[0]
-
+    if data ==0:
+        raise "no dataset"
     return data
+

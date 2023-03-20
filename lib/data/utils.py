@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 import torch
 import numpy as np
+import wget
 import dgl
 
 name="DYGL_dataset"
@@ -50,6 +51,10 @@ def file_download(url: str, fname: str):
         for data in resp.iter_content(chunk_size=1024):
             size = file.write(data)
             bar.update(size)
+
+def wget_download(url: str, fname: str):
+    wget.download(url,fname)
+
 
 def process_edge_prediction(graph,time,train_val,val_test):
     src ,dst = graph.edges()
