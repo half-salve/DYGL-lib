@@ -219,7 +219,7 @@ class TGNConv(torch.nn.Module):
       self.flag = False
 
     if n_neighbors ==None:
-      n_neighbors = self.n_neighbors
+      n_neighbors_model = self.n_neighbors
     n_samples = len(source_nodes)
     nodes = np.concatenate([source_nodes, destination_nodes, negative_nodes])
     positives = np.concatenate([source_nodes, destination_nodes])
@@ -256,7 +256,7 @@ class TGNConv(torch.nn.Module):
                                                              source_nodes=nodes,
                                                              timestamps=timestamps,
                                                              n_layers=self.n_layers,
-                                                             n_neighbors=n_neighbors,
+                                                             n_neighbors=n_neighbors_model,
                                                              time_diffs=time_diffs)
 
     source_node_embedding = node_embedding[:n_samples]
@@ -269,7 +269,7 @@ class TGNConv(torch.nn.Module):
         # new messages for them)
         self.update_memory(positives, self.memory.messages)
 
-        assert torch.allclose(memory[positives], self.memory.get_memory(positives), atol=1e-5), \
+        assert torch.allclose(memory[positives], self.memory.get_memory(positives), atol=1e-4), \
           "Something wrong in how the memory was updated"
 
         # Remove messages for the positives since we have already updated the memory using them

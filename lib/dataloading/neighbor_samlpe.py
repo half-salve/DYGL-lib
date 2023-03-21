@@ -72,32 +72,32 @@ class NeighborFinder:
             source_neighbors, source_edge_idxs, source_edge_times = self.find_before(source_node,
                                                         timestamp)  # extracts all neighbors, interactions indexes and timestamps of all interactions of user source_node happening before cut_time
 
-        if len(source_neighbors) > 0 and n_neighbors > 0:
-            if self.uniform:  # if we are applying uniform sampling, shuffles the data above before sampling
-                sampled_idx = np.random.randint(0, len(source_neighbors), n_neighbors)
+            if len(source_neighbors) > 0 and n_neighbors > 0:
+                if self.uniform:  # if we are applying uniform sampling, shuffles the data above before sampling
+                    sampled_idx = np.random.randint(0, len(source_neighbors), n_neighbors)
 
-                neighbors[i, :] = source_neighbors[sampled_idx]
-                edge_times[i, :] = source_edge_times[sampled_idx]
-                edge_idxs[i, :] = source_edge_idxs[sampled_idx]
+                    neighbors[i, :] = source_neighbors[sampled_idx]
+                    edge_times[i, :] = source_edge_times[sampled_idx]
+                    edge_idxs[i, :] = source_edge_idxs[sampled_idx]
 
-                # re-sort based on time
-                pos = edge_times[i, :].argsort()
-                neighbors[i, :] = neighbors[i, :][pos]
-                edge_times[i, :] = edge_times[i, :][pos]
-                edge_idxs[i, :] = edge_idxs[i, :][pos]
-            else:
-            # Take most recent interactions
-                source_edge_times = source_edge_times[-n_neighbors:]
-                source_neighbors = source_neighbors[-n_neighbors:]
-                source_edge_idxs = source_edge_idxs[-n_neighbors:]
+                    # re-sort based on time
+                    pos = edge_times[i, :].argsort()
+                    neighbors[i, :] = neighbors[i, :][pos]
+                    edge_times[i, :] = edge_times[i, :][pos]
+                    edge_idxs[i, :] = edge_idxs[i, :][pos]
+                else:
+                # Take most recent interactions
+                    source_edge_times = source_edge_times[-n_neighbors:]
+                    source_neighbors = source_neighbors[-n_neighbors:]
+                    source_edge_idxs = source_edge_idxs[-n_neighbors:]
 
-                assert (len(source_neighbors) <= n_neighbors)
-                assert (len(source_edge_times) <= n_neighbors)
-                assert (len(source_edge_idxs) <= n_neighbors)
+                    assert (len(source_neighbors) <= n_neighbors)
+                    assert (len(source_edge_times) <= n_neighbors)
+                    assert (len(source_edge_idxs) <= n_neighbors)
 
-                neighbors[i, n_neighbors - len(source_neighbors):] = source_neighbors
-                edge_times[i, n_neighbors - len(source_edge_times):] = source_edge_times
-                edge_idxs[i, n_neighbors - len(source_edge_idxs):] = source_edge_idxs
+                    neighbors[i, n_neighbors - len(source_neighbors):] = source_neighbors
+                    edge_times[i, n_neighbors - len(source_edge_times):] = source_edge_times
+                    edge_idxs[i, n_neighbors - len(source_edge_idxs):] = source_edge_idxs
 
         return neighbors, edge_idxs, edge_times
     

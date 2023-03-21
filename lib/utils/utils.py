@@ -24,7 +24,6 @@ def get_logger(parms,log_level='INFO',save_dir=None ,name=None,):
         log_dir = save_dir
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    
     log_filename = "-".join(parms) + ".log"
     
     logfilepath = os.path.join(log_dir, log_filename)
