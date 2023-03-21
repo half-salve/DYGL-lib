@@ -11,7 +11,7 @@ import torch
 from tqdm import tqdm
 
 from .dynamic_dataset  import DYGLDataset
-
+from .init_feat import PositionalEncode
 from dgl.data.graph_serialize import save_graphs,load_graphs
 from dgl.data.utils import generate_mask_tensor
 
@@ -36,11 +36,12 @@ class  UCIDataset(DYGLDataset):
         PATH = os.path.join(self.raw_path, '{}.txt'.format(self._name))
         data  = pd.read_table(PATH ,sep=" ",header=None)
         data.columns=["time","source","target","label"]
-        print(data["time"][0])
+
         format = "%Y-%m-%d %H:%M:%S"
         start_time = datetime.datetime.strptime(data["time"][0],format)
-        time = [(datetime.datetime.strptime(t,format) - start_time).seconds for t in data["time"]]
+        time = [int(datetime.datetime.strptime(t,format).timestamp() - start_time.timestamp()) for t in data["time"]]
         second_time = np.array(time)
+
         src_ids = data["source"].values
         dst_ids = data["target"].values
         indexs = []
@@ -49,6 +50,7 @@ class  UCIDataset(DYGLDataset):
                 indexs.append(index)
 
         second_time = np.delete(second_time,indexs)
+        print(second_time[0:15])
         src_ids = np.delete(src_ids,indexs)
         dst_ids = np.delete(dst_ids,indexs)
 
@@ -83,7 +85,8 @@ class  UCIDataset(DYGLDataset):
         self._graph.edata['valid_edge_observed_mask'] = generate_mask_tensor(valid_edge_observed_mask)
         self._graph.edata['test_edge_observed_mask'] = generate_mask_tensor(test_edge_observed_mask)
         
-        self._graph.edata['edge_feat'] = torch.zeros((self._graph.number_of_edges(),64))
+        edge_feat_init = PositionalEncode(64,self._graph.number_of_edges())
+        self._graph.edata['edge_feat'] = edge_feat_init
 
         self._graph.ndata["feat"] = torch.zeros((self._graph.number_of_nodes() ,64))
         self._graph.edata['time'] = torch.tensor(second_time/3600)

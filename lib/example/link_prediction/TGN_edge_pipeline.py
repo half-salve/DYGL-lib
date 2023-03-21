@@ -69,7 +69,7 @@ def TGN_link_prediction(config_object,model_object,dataset,Edge_predict):
     ### Extract data for training, validation and testing
 
     train_src,train_dst, train_t , train_edge = numpy_from_mask(data,data.edata['train_edge_observed_mask'])
-    
+
     valid_src, valid_dst, valid_t, valid_edge  = numpy_from_mask(data,data.edata['valid_edge_mask'])
     valid_observed_src, valid_observed_dst, valid_observed_t, valid_observed_edge = numpy_from_mask(data,data.edata['valid_edge_observed_mask'])
 

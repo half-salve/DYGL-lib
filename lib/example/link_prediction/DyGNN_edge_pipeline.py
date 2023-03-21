@@ -136,10 +136,8 @@ def DyGNN_link_prediction(config_object,model_object,dataset,Edge_predict):
 
             model_optimizer.zero_grad()
             model.train()
-            print(src_cut,dst_cut,time_cut)
-            output_rep_head_tensor, output_rep_tail_tensor, head_neg_tensors, tail_neg_tensors = model(src_cut,dst_cut,time_cut)
-            print(output_rep_head_tensor)
 
+            output_rep_head_tensor, output_rep_tail_tensor, head_neg_tensors, tail_neg_tensors = model(src_cut,dst_cut,time_cut)
             #x.repeat(a, b) 列数先乘以b倍，再行数乘以a倍。即对x先横向复制b倍，再纵向复制a倍
             head_pos_tensors = output_rep_head_tensor.clone().repeat(1,model.num_negative).view(-1,model.embedding_dims)
             tail_pos_tensors = output_rep_tail_tensor.clone().repeat(1,model.num_negative).view(-1,model.embedding_dims)

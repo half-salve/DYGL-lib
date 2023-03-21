@@ -1,5 +1,5 @@
 {
-  "bs": 128,
+  "bs": 256,
   "learning_rate": 0.001,
   "num_negative": 1,
   "act": "tanh",

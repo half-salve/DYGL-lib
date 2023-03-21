@@ -121,7 +121,8 @@ def CAW_init(config,Data,task):
 
     empty = torch.zeros(Data.edata["edge_feat"].shape[1]).view(1,-1)
     edge_features = torch.vstack([empty, Data.edata["edge_feat"]])
-    
+    if config["dataset"] == "UCI":
+        config["pos_dim"] = 96
     model = CAWConv([train_ngh_finder,full_ngh_finder], Data.ndata["feat"],  edge_features,agg=config["agg"],
                 num_layers = config["n_layer"], use_time = config["time"]  , attn_agg_method = config["agg_method"],attn_mode = config["attn_mode"],
                 n_head = config["attn_n_head"], drop_out = config["drop_out"] , pos_dim = config["pos_dim"] ,pos_enc = config["pos_enc"] ,

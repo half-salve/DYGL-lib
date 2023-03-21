@@ -7,7 +7,7 @@ import torch
 from tqdm import tqdm
 
 from .dynamic_dataset  import DYGLDataset
-
+from .init_feat import PositionalEncode
 from dgl.data.graph_serialize import save_graphs,load_graphs
 from dgl.data.utils import generate_mask_tensor
 
@@ -92,6 +92,11 @@ class  JODIEDataset(DYGLDataset):
         self._graph.edata['valid_edge_observed_mask'] = generate_mask_tensor(valid_edge_observed_mask)
         self._graph.edata['test_edge_observed_mask'] = generate_mask_tensor(test_edge_observed_mask)
         
+        if self.name == "lastfm" or self.name == "mooc":
+            edge_feat_init = PositionalEncode(172,self._graph.number_of_edges())
+            if self.name == "mooc":
+                edge_feat_init[:,:feat_l.shape[1]] = torch.tensor(feat_l)
+            feat_l = edge_feat_init.numpy()
         self._graph.edata['edge_feat'] = torch.tensor(feat_l)
         self._graph.ndata["feat"] = torch.zeros((self._graph.number_of_nodes() , \
                                         self._graph.edata['edge_feat'].shape[1]))

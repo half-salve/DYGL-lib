@@ -5,7 +5,6 @@ import requests
 import random
 from tqdm import tqdm
 
-import torch
 import numpy as np
 import wget
 import dgl

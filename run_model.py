@@ -5,7 +5,7 @@ import sys
 
 from lib.utils import get_data
 from lib.example import train_and_test
-parser = argparse.ArgumentParser('TGN self-supervised training')
+parser = argparse.ArgumentParser('training')
 
 parser.add_argument('--dataset', type=str, default='UCI', help='data sources to use, try wikipedia or reddit',
                     choices=["wikipedia" ,"Reddit","Mooc","redditlink","LastFM","UCI",], )
